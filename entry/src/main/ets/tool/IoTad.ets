@@ -56,11 +56,20 @@ interface _body1_push_brightness{
 interface _paras{ brightness:number }
 
 
+interface _body3_push_curtain{
+  service_id:string
+  command_name:string
+  paras:_paras3
+}
+interface _paras3{ curtain:string }
+
 export class IoTad{
   Token:string = ''
   DEVICE_ID:string|undefined = "67df87e02902516e866a169d_1001"
 
   async init() {
+    /*let data = a.toString().match(regex)?.toString().split(",{\"result_ code\":0,\"data\":")[1]+"}"
+    console.log("data:::"+JSON.parse(data)?.["temperature"])*/
 
       await this.getToken().then((value)=>{
         if(value == 1){
@@ -173,13 +182,13 @@ export class IoTad{
 }
 
 
-  async get_data(name:string,content:string,service_id:string){
+  async get_data(){
 
     const httpRequest = http.createHttp();
     const url = `https://${IOTDA_ENDPOINT}/v5/iot/${PROJECT_ID}/devices/${this.DEVICE_ID}/commands`;
     const body :_body4_get_data = {
-      service_id: service_id, // 设备模型中的服务 ID
-      command_name: name, // 命令名称
+      service_id: "device_ctrl", // 设备模型中的服务 ID
+      command_name: "get_sensor_data", // 命令名称
       paras: {}
     };
 
@@ -213,7 +222,7 @@ export class IoTad{
   }
 
 
-  async set_LED_brightness_by_id(brightness:number,LED_id:number){
+  async set_LED_brightness_by_id(brightness:number,LED_id?:number){
 
     const httpRequest = http.createHttp();
     const url = `https://${IOTDA_ENDPOINT}/v5/iot/${PROJECT_ID}/devices/${this.DEVICE_ID}/commands`;
@@ -252,6 +261,47 @@ export class IoTad{
     }
 
   }
+
+  async set_curtain_by_id(commind:string,id?:number){
+
+    const httpRequest = http.createHttp();
+    const url = `https://${IOTDA_ENDPOINT}/v5/iot/${PROJECT_ID}/devices/${this.DEVICE_ID}/commands`;
+    const body :_body3_push_curtain = {
+      service_id: "device_ctrl", // 设备模型中的服务 ID
+      command_name: "set_curtain", // 命令名称
+      paras: {
+        // 命令参数
+        curtain:commind
+      },
+    };
+
+    console.log("body:::"+JSON.stringify(body))
+    try {
+      const response = await httpRequest.request(url, {
+        method: http.RequestMethod.POST,
+        header: {
+          'Content-Type': 'application/json',
+          'X-Auth-Token': this.Token,
+        },
+        extraData: JSON.stringify(body),
+      });
+
+      console.log("Message sent::"+response.result)
+      if (response.responseCode === 200) {
+        console.log('Message sent successfully:', response.result.toString());
+        return 1
+      } else {
+        return -1
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      return -1
+    } finally {
+      httpRequest.destroy();
+    }
+
+  }
+
 
 
 }

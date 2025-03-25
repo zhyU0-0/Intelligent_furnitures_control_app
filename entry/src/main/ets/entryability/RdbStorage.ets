@@ -96,9 +96,7 @@ export class RoomDatabase {
       const resultSet = await this.rdbStore?.query(predicates_room);
       console.log('Rooms queried successfully.');
       if (resultSet?.rowCount == 0) {
-        AlertDialog.show({
-          message: `null:`
-        })
+        return [new room('null',[])]
       }
 
       while (resultSet?.goToNextRow()) {
@@ -149,11 +147,7 @@ export class RoomDatabase {
     try {
       const resultSet = await this.rdbStore?.query(predicates_room);
       console.log('Rooms queried successfully.');
-      if (resultSet?.rowCount == 0) {
-        AlertDialog.show({
-          message: `null:`
-        })
-      }
+
 
       while (resultSet?.goToNextRow()) {
         const room_id = resultSet.getLong(0);
@@ -191,11 +185,7 @@ export class RoomDatabase {
     try {
       const resultSet = await this.rdbStore?.query(predicates_room);
       console.log('Rooms queried successfully.');
-      if (resultSet?.rowCount == 0) {
-        AlertDialog.show({
-          message: `null:`
-        })
-      }
+
 
       while (resultSet?.goToNextRow()) {
         const room_id = resultSet.getLong(0);
@@ -304,11 +294,7 @@ export class RoomDatabase {
     try {
       const resultSet = await this.rdbStore?.query(predicates_room);
       console.log('Rooms queried successfully.');
-      if (resultSet?.rowCount == 0) {
-        AlertDialog.show({
-          message: `null:`
-        })
-      }
+
 
       while (resultSet?.goToNextRow()) {
         const room_id = resultSet.getLong(0);

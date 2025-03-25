@@ -11,7 +11,7 @@ import { LocalStoraga } from '../entryability/LocalStorage';
 
 
 
-let _IoTad:IoTad = new IoTad()
+export let _IoTad:IoTad = new IoTad()
 
 @Entry
 @Component

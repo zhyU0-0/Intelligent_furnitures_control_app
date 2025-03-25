@@ -13,7 +13,7 @@ import wifi from '@ohos.wifi';
 import {  notificationManager } from '@kit.NotificationKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-
+import { _IoTad } from './scan_devices';
 
 
 const max_temp = 30
@@ -84,16 +84,28 @@ struct homepage{
     }
 
     setTimeout(async ()=>{
-      for (let item of await Room_db.getAllRooms()) {
-        this.arr_room.push(item)
-        console.log("q_room"+JSON.stringify(item))
+      let room:room[] = await Room_db.getAllRooms()
+      if(room[0].name=="null"){
+        AlertDialog.show({message:"还没有家居哦，快去录入吧~"})
       }
+        for (let item of await Room_db.getAllRooms()) {
+          this.arr_room.push(item)
+          console.log("q_room"+JSON.stringify(item))
+        }
+
+
       console.log("open_arr_room:"+JSON.stringify(this.arr_room))
 
       setTimeout(async ()=>{
-        await tcp.getData()
-        this.analyze_data(Data_Tcp)
-      },3000)
+        let data = await _IoTad.get_data()
+        if(data != -1){
+          console.log("data:::"+data)
+          this.analyze_data(data.toString())
+        }
+          await tcp.getData()
+          this.analyze_data(Data_Tcp)
+
+      },1000)
 
       /*setInterval(async ()=>{
         await tcp.getData()

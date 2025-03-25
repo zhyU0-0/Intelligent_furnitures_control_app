@@ -1,5 +1,6 @@
 import { RoomDatabase } from "../entryability/RdbStorage";
 import { tcp } from "../pages/Index";
+import { _IoTad } from "../pages/scan_devices";
 //import { tcp, udp } from "../pages/Index";
 import {  Furniture, room } from "./classes";
 
@@ -171,7 +172,7 @@ export struct add_furniture_page {
           })
         Button('完成')
           .onClick(async () => {
-            if (this.fur_name != '') {
+            if (this.fur_name != ''&&this.type != 0) {
               //数据库
               console.log('roomwwwwww')
               //let new_f_R_Id = await Room_db.getRoomsIdByName(new_arr_rooms[this.index].name)
@@ -556,8 +557,6 @@ export struct displayRoom {
 
   build() {
     Stack() {
-
-
         Tabs() {
           TabContent(){
             Stack() {
@@ -612,14 +611,17 @@ export struct displayRoom {
                   this.is_show_air_condition = true
                 })
               }.lanes(2)
-
+              }
               if (this.is_show_lights) {
                 control_lights({ arr_room: this.arr_room, is_show: this.is_show_lights })
               }
               if (this.is_show_air_condition) {
                 control_air_condition({ arr_room: this.arr_room, is_show: this.is_show_air_condition })
               }
-            }
+              if (this.is_show_curtain) {
+                control_curtain({ arr_room: this.arr_room, is_show: this.is_show_curtain })
+              }
+
             }
 
           }
@@ -780,6 +782,48 @@ struct air_condition{
   }
 }
 
+
+@Component
+struct control_curtain{
+  @Link is_show:boolean
+  @Link arr_room:room[]
+
+  aboutToAppear(): void {
+
+
+  }
+  build() {
+    Column(){
+      Button().onClick(()=>{this.is_show = false})
+      Tabs(){
+        ForEach(this.arr_room,(item:room)=>{
+          TabContent(){
+          }.tabBar(item.name)
+        })
+      }.height("30%")
+      Button("on").height("10%")
+        .onClick(()=>{
+          _IoTad.set_curtain_by_id("on")
+        })
+      Button("off").height("10%")
+        .onClick(()=>{
+          _IoTad.set_curtain_by_id("off")
+        })
+      Button("8888").height("10%")
+        .onClick(()=>{
+          _IoTad.set_LED_brightness_by_id(8888)
+        })
+      Button('1').height("10%")
+        .onClick(()=>{
+          _IoTad.set_LED_brightness_by_id(1)
+        })
+
+    }.backgroundColor(Color.White)
+    .width("100%").height("100%")
+  }
+}
+
+
 @Component
 struct show_f{
   @Prop arr:room[]
@@ -812,82 +856,4 @@ struct show_f{
 }
 
 
-/*
 
-@Component
-export struct displayRoom {
-
-
-  //可以添加从数据库取出room的方法存入arr_room
-  @State arr_room: room[] = []
-  @Link is_show_r:boolean
-  l:number = 0
-
-
-  async aboutToAppear(): Promise<void> {
-
-    setTimeout(async ()=>{
-      await console.log("open_All_room:"+JSON.stringify(Room_db.getAllRooms()))
-      for (let item of await Room_db.getAllRooms()) {
-        this.arr_room.push(item)
-        console.log("q_room"+JSON.stringify(item))
-      }
-      console.log("open_arr_room:"+JSON.stringify(this.arr_room))
-      new_arr_rooms = this.arr_room
-
-    },100)
-    this.l = arr_room.length
-
-  }
-  aboutToRecycle(): void {
-    console.log("room:Recycle")
-  }
-
-
-  @Builder
-  MyBuilder() {
-    Column() {
-      Text("+")
-        .fontSize(20)
-    }
-    .width(50)
-    .backgroundColor('#ff8f8f8f')
-  }
-
-  build() {
-    Stack() {
-
-      Tabs() {
-        ForEach(this.arr_room, (item: room, index) => {
-          TabContent() {
-            myList({room1:this.arr_room[index],arr_fnt:this.arr_room[index].furniture_s,index:index})
-
-          }
-          .tabBar(item.name)
-          .width(200)
-          .height(10)
-
-
-        })
-        */
-/*TabContent() {
-
-        }
-        .tabBar(this.MyBuilder)
-        .width(200)
-        .height(10)*//*
-
-
-      }
-      .barMode(this.l>3?BarMode.Scrollable:BarMode.Fixed)
-      .barWidth("100%")
-      Button()
-        .onClick(()=>{go_bed(arr_room)})
-
-      if(this.is_show_r){
-        add_room_page({ arr: this.arr_room, is_show: this.is_show_r })
-      }
-    }
-
-  }
-}*/
