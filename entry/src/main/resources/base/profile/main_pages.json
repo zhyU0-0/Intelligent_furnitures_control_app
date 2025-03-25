@@ -1,0 +1,13 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/OpenAI_Page",
+    "pages/facePage",
+    "pages/Register",
+    "pages/Open",
+    "pages/try",
+    "pages/WarnPage",
+    "pages/get_furniture",
+    "pages/scan_devices"
+  ]
+}

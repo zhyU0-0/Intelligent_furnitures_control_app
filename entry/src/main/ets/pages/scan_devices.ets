@@ -1,0 +1,70 @@
+import { IoTad } from '../tool/IoTad';
+import Notification from '@ohos.notification'
+import Base from '@ohos.base'
+
+import wifi from '@ohos.wifi';
+import { router } from '@kit.ArkUI';
+import { LocalStoraga } from '../entryability/LocalStorage';
+
+
+//***********本页面专门用来获取权限，初始化信息*********
+
+
+
+let _IoTad:IoTad = new IoTad()
+
+@Entry
+@Component
+struct Scan_devices {
+  @State message: string = '开始体验';
+  locals:LocalStoraga = new LocalStoraga("scan")
+  async aboutToAppear() {
+    if(await this.locals.getDate("is_scan")){
+      router.replaceUrl({
+        url:"pages/Index"
+      })
+      return
+    }
+
+    try {
+      let isWifiActive = wifi.isWifiActive();
+      console.info("isWifiActive:" + isWifiActive);
+      AlertDialog.show({message:"WiFi已打开"})
+    }catch(error){
+      console.error("failed:" + JSON.stringify(error));
+      AlertDialog.show({message:"请打开WiFi"})
+    }
+
+    await Notification.requestEnableNotification().then(() => {
+      console.info("requestEnableNotification success");
+    }).catch((err: Base.BusinessError) => {
+      console.error(`requestEnableNotification failed, code is ${err}`);
+    });
+
+
+    await _IoTad.init()
+
+  }
+
+
+  build() {
+    RelativeContainer() {
+      Text(this.message)
+        .id('Scan_devicesHelloWorld')
+        .fontSize($r('app.float.page_text_font_size'))
+        .fontWeight(FontWeight.Bold)
+        .alignRules({
+          center: { anchor: '__container__', align: VerticalAlign.Center },
+          middle: { anchor: '__container__', align: HorizontalAlign.Center }
+        })
+        .onClick(() => {
+          this.locals.setDate("is_scan",true)
+          router.replaceUrl({
+            url:"pages/Index"
+          })
+        })
+    }
+    .height('100%')
+    .width('100%')
+  }
+}

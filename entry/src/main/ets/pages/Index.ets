@@ -1,0 +1,565 @@
+import { McLineChart, Options } from '@mcui/mccharts'
+import util from '@ohos.util';
+import router from '@ohos.router';
+import { air_condition, Furniture, room } from '../tool/classes';
+import { displayRoom} from '../tool/component';
+import { LocalStoraga } from '../entryability/LocalStorage';
+import { _Udp } from '../tool/UDP';
+import { Data_Tcp, _Tcp } from '../tool/TCP';
+import { RoomDatabase } from '../entryability/RdbStorage';
+import { OpenAI } from './OpenAI_Page';
+import socket from '@ohos.net.socket';
+import wifi from '@ohos.wifi';
+import {  notificationManager } from '@kit.NotificationKit';
+import { BusinessError } from '@kit.BasicServicesKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
+
+
+
+const max_temp = 30
+const max_humi = 90
+const TAG: string = '[PublishOperation]';
+const DOMAIN_NUMBER: number = 0xFF00;
+//export let udp:_Udp = new _Udp(3861,'172.16.0.119')
+//export let tcp:_Tcp = new _Tcp(3861,'172.16.0.119')
+export let tcp:_Tcp = new _Tcp(8888,'192.168.191.19')
+let Room_db:RoomDatabase = new RoomDatabase(globalThis.getContext())
+
+
+function resolveIP(ip:number):string{
+  if(ip<0||ip>0xFFFFFFFF){
+    return '0'
+  }
+  return (ip >>>24)+'.'+(ip >> 16 & 0xFF)+'.'+(ip >>8 &0xFF) +'.'+(ip &0xFF);
+}
+
+
+@Component
+struct homepage{
+
+  @State serOption:Options = new Options({
+    xAxis:{data:["0:00","3:00","6:00","9:00","12:00","15:00","18:00","21:00"]},
+    yAxis:{name:'温度'},
+    series:[{
+      name:'最高气温',
+      data:[11,10,2,11,22,66,10,60],
+      color:"#dd00dd",
+      arcLineWidth:100
+    }]
+  })
+
+  private localAddr:socket.NetAddress |null = null
+  private mixerAddr:socket.NetAddress |null = null
+  @State _h_detail:string = '0%'
+  @State num1:string = '';
+  @State num2:string = '';
+  @State is_Lock:boolean = false
+  @State is_show_r:boolean = false
+  @State is_sleep:boolean = false
+  @State is_chang:boolean = false
+  @State arr_room:room[] = []
+  @State is_show_humidity:boolean = false
+  @State _height:string = "20%"
+  @State backG:string = "app.media.back_house"
+  @State _width:string = '90%'
+  @State temp:string = ''
+  @State humi:string = ''
+  @Link is_warn:boolean
+  @Link warn_data:Datamodel
+
+
+  async aboutToAppear() {
+
+
+
+    this.localAddr = {
+      family: 1,
+      port: 8889,
+      address: resolveIP(wifi.getIpInfo().ipAddress)
+    }
+    //接收者的ip地址
+    this.mixerAddr = {
+      address:'192.168.191.19',
+      port:8889
+    }
+
+    setTimeout(async ()=>{
+      for (let item of await Room_db.getAllRooms()) {
+        this.arr_room.push(item)
+        console.log("q_room"+JSON.stringify(item))
+      }
+      console.log("open_arr_room:"+JSON.stringify(this.arr_room))
+
+      setTimeout(async ()=>{
+        await tcp.getData()
+        this.analyze_data(Data_Tcp)
+      },3000)
+
+      /*setInterval(async ()=>{
+        await tcp.getData()
+        console.log("Tcp_get_data : "+Data_Tcp)
+        this.analyze_data(Data_Tcp)
+      },3000)*/
+
+    },100)
+    //setTimeout(()=>{ this.udp_send()},1000)
+  }
+  async judge(temp?:number,humi?:number){
+    let title:string = ''
+
+    if(temp != null){
+      if(temp>max_temp) {
+        let paramInfo: Datamodel = {
+          type: "temp",
+          data: temp,
+          arr: await Room_db.getAllRooms()
+        }
+        this.warn_data = paramInfo
+        this.is_warn = true
+      }
+      title = "温度过高"
+    }
+    if(humi != null) {
+      if (humi > max_humi) {
+        let paramInfo: Datamodel = {
+          type: "temp",
+          data: humi,
+          arr: await Room_db.getAllRooms()
+        }
+        this.warn_data = paramInfo
+        this.is_warn = true
+      }
+      title = "湿度过高"
+    }
+
+      let notificationRequest: notificationManager.NotificationRequest = {
+      id: 1,
+      content: {
+        notificationContentType: notificationManager.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT, // 普通文本类型通知
+        normal: {
+          title: '警告',
+          text: title,
+          additionalText: 'test_additionalText',
+        }
+      }
+    };
+
+
+
+      notificationManager.publish(notificationRequest, (err: BusinessError) => {
+        if (err) {
+          hilog.error(DOMAIN_NUMBER, TAG, `Failed to publish notification. Code is ${err.code}, message is ${err.message}`);
+          return;
+        }
+        hilog.info(DOMAIN_NUMBER, TAG, 'Succeeded in publishing notification.');
+      });
+
+  }
+  analyze_data(data:string){
+    let arr:string[] = data.split("/")
+    for(let item of arr){
+
+      console.log("TCp data:"+item)
+      let values:string = JSON.parse(item)
+      if(typeof values?.["temp"] != "undefined") {
+        this.temp = values?.["temp"]
+        this.humi = values?.["humi"]
+        this.judge(Number(this.temp),Number(this.humi))
+
+
+        console.log("udp send temp"+this.temp+"::"+this.humi)
+      }else {
+        let new_arr_room:room[] = []
+        for (let r of this.arr_room){
+          let new_arr_f:Furniture[] = []
+          for (let f of r.furniture_s){
+            if(f.type_id ==values?.["id"]){
+              if(typeof values?.["lighting"] != "undefined") {
+                f = new Furniture(f.name,values?.["switch"],values?.["id"])
+                f.lighting = values?.["lighting"]
+                console.log("udp send t"+f.switch+"::"+f.lighting+'::'+f.type_id)
+              }else if(typeof values?.["a_temp"] != "undefined"){
+                f = new Furniture(f.name,values?.["switch"],values?.["id"])
+                f.temp = values?.["a_temp"]
+                f.is_dry = values?.["is_dry"]
+              }
+              else {
+                f = new Furniture(f.name,values?.["switch"],values?.["id"])
+                console.log("udp send t"+f.switch+"::"+f.type_id)
+              }
+            }
+            new_arr_f.push(f)
+          }
+          new_arr_room.push(new room(r.name,new_arr_f))
+          console.log("UDP ROOM NEW"+JSON.stringify(r))
+        }
+        this.arr_room = new_arr_room
+      }
+
+    }
+  }
+
+
+
+  @Builder
+  MenuBar(){
+    Menu(){
+      MenuItem({content:'添加房间'}).onClick(()=>{
+        this.is_show_r = true
+      })
+    }
+  }
+
+  build() {
+
+
+    Column(){
+      //头部
+      Row(){
+        Stack(){
+          Row(){
+            Column(){
+              Text("温度："+this.temp)
+                .fontSize(25)
+                .fontColor(Color.White)
+              Text("湿度："+this.humi)
+                .fontSize(25)
+                .fontColor(Color.White)
+            }.width("50%").height('100')
+            .onClick(()=>{
+              //this.is_show_humidity = !this.is_show_humidity
+              animateTo({duration:500},()=>{
+                this._h_detail = "90%"
+              })
+            })
+            Column(){
+              Row(){
+                Button(this.is_Lock?'开锁':'关锁')
+                  .onClick(()=>{this.is_Lock = !this.is_Lock
+                  animateTo({duration:500},async ()=>{
+                    if(this.is_Lock){
+                      this._height = "100%"
+                      this.backG = "app.media.back_house1"
+                      this._width = "100%"
+                    }else {
+                      this._height = "20%"
+                      this.backG = "app.media.back_house"
+                      this._width = "90%"
+                    }
+                    //this.udp_send()
+                  })})
+                Button('...')
+                  .bindMenu(this.MenuBar)
+                  .onClick(()=>{
+                    //console.log("NAPI:"+testNapi.max(2,70))
+                  })
+              }
+              Button(this.is_sleep?"退出睡觉模式":"进入睡觉模式")
+                .onClick(async ()=>{
+                  //await this.udp_send()
+                  console.log("room sleep :"+JSON.stringify(this.arr_room))
+                  let new_a_room:room[]=[]
+                  this.is_sleep = !this.is_sleep
+                  for(let r of this.arr_room){
+                    if(this.is_sleep){
+                      r.go_bed()
+                    }
+                    new_a_room.push(r)
+                  }
+                  this.arr_room = new_a_room
+                  console.log("room sleep :"+JSON.stringify(this.arr_room))
+
+                })
+            }
+
+
+          }.height(this._height).width(this._width)
+          //.backgroundColor('#0080f5')
+          .backgroundImage($r(this.backG))
+          .backgroundImageSize(ImageSize.Cover)
+          .padding(5)
+          .borderRadius(15)
+
+          if(this.is_show_r){
+            Column().width("100%").height('20%').backgroundColor("#9c000000")
+          }
+        }
+      }
+      detail_data({_h:this._h_detail,is_show:this.is_show_humidity,serOption_hump:this.serOption})
+
+
+
+      //主体
+      Column(){
+        displayRoom({is_show_r:this.is_show_r,arr_room:this.arr_room,is_sleep:this.is_sleep})
+      }
+      .height("90%")
+      .width('100%')
+
+
+    }.height("100%").width("100%")
+  }
+}
+
+
+@Component
+struct detail_data{
+  @Link is_show:boolean
+  @Link serOption_hump:Options
+  @State _w:string = "100%"
+  @Link _h:string
+  build() {
+    Column(){
+      Button("A")
+        .onClick(()=>{
+          animateTo({duration:500},()=>{
+            this._h = "0%"
+          })
+        })
+        Row().width('100%').height("25%").onClick(()=>{this.is_show = false})
+        Row(){
+          McLineChart({options:this.serOption_hump})
+        }.width('100%')
+        .height('50%')
+        .backgroundColor(Color.White)
+        Row().width('100%').height("25%").onClick(()=>{this.is_show = false})
+    }.height(this._h).width(this._w)
+  }
+}
+
+@Component
+struct userpage{
+  localstorage :LocalStoraga = new LocalStoraga("User_data")
+  @State username:string = ''
+  @State is_show_all_f:boolean = false
+  @State f_arr:Furniture[] = []
+  @State _height:string = "0%"
+  aboutToAppear() {
+
+    console.log("user",'into')
+    this.localstorage.getDate("username").then(_User_=>{
+      console.log("user",_User_)
+      this.username = _User_ as string
+    })
+  }
+  build() {
+
+    Stack(){
+      Column(){
+        Text("用户界面")
+        Text(this.username)
+        Button("退出登录")
+          .onClick(()=>{
+            this.localstorage.setDate('is_landing',false)
+            router.replaceUrl({
+              url:'pages/Open'
+            })
+          })
+        Button("我的家居")
+          .onClick(async ()=>{this.is_show_all_f = true
+            this.f_arr = await Room_db.getAllFurinture()
+          animateTo({duration:500},()=>{
+            this._height = "50%"
+          })})
+      }.height("100%").width("100%")
+      if(this.is_show_all_f){
+        Column(){
+          List(){
+            ForEach(this.f_arr, (item: Furniture, index) => {
+              ListItem(){
+                Row(){
+                  Text(item.name)
+                  Text(item.type_id.toString())
+                }.width('100%').height(50).justifyContent(FlexAlign.SpaceAround)
+              }
+            })
+          }
+        }.width('90%').height(this._height)
+        .onClick(()=>{this.is_show_all_f = false
+        this._height = '0%'})
+      }
+    }
+
+  }
+}
+//////////////////////////////*********************///////////////////////////////////////
+@Entry
+@Component
+
+struct Index {
+
+  @State selectnumber:number = 0;
+  @State is_show_humidity:boolean = false
+  @State is_warn:boolean = false
+  @State warn_data:Datamodel={type:'',arr:[],data:0}
+
+
+  @Builder
+  MyBuilder_user (title:string,num:number){
+    Column(){
+      Row().width("100%").height(15)
+      Image($r("app.media.user"))
+        .height(num==this.selectnumber?20:10)
+        .width(num==this.selectnumber?20:10)
+        .fillColor(num==this.selectnumber?'#ff41a5fc':Color.White)
+
+      Text(title)
+        .fontColor(num==this.selectnumber?'#ff41a5fc':Color.White)
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(num==this.selectnumber?'#d7e7ff':'#ff41a5fc')
+  }
+  @Builder
+  MyBuilder_add (title:string,num:number){
+    Column(){
+      Row().width("100%").height(15)
+      Image($r("app.media.add"))
+        .height(num==this.selectnumber?20:10)
+        .width(num==this.selectnumber?20:10)
+        .fillColor(num==this.selectnumber?'#ff41a5fc':Color.White)
+
+      Text(title)
+        .fontColor(num==this.selectnumber?'#ff41a5fc':Color.White)
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(num==this.selectnumber?'#d7e7ff' : '#ff41a5fc')
+  }
+  @Builder
+  MyBuilder_home (title:string,num:number){
+    Column(){
+      Row().width("100%").height(15)
+      Image($r("app.media.home"))
+        .height(num==this.selectnumber?20:10)
+        .width(num==this.selectnumber?20:10)
+        .fillColor(num==this.selectnumber?'#ff41a5fc':Color.White)
+
+      Text(title)
+        .fontColor(num==this.selectnumber?'#ff41a5fc':Color.White)
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(num==this.selectnumber?'#d7e7ff':'#ff41a5fc')
+  }
+
+  build() {
+    Stack() {
+      Column(){
+        Tabs({ barPosition:BarPosition.End }){
+          TabContent(){
+            homepage({is_warn:this.is_warn,warn_data:this.warn_data})
+          }
+          .tabBar(this.MyBuilder_home("主页",0))
+
+
+          TabContent(){
+            OpenAI()
+          }
+          .tabBar(this.MyBuilder_add("更多",1))
+
+
+          TabContent(){
+            userpage()
+          }.tabBar(this.MyBuilder_user("用户",2))
+        }
+        .width('100%')
+        .height('100%')
+        .onChange((index:number)=> {
+          this.selectnumber = index
+        })
+        .animationDuration(10)
+      }
+      .height('100%')
+      .width('100%')
+      .backgroundColor("#d7e7ff")
+
+      if(this.is_warn){
+        WarnPage({warn_data:this.warn_data,is_warn:this.is_warn})
+      }
+
+    }
+    .height('100%')
+    .width('100%')
+  }
+}
+
+export class Datamodel{
+  type:string = ''
+  arr:room[] = []
+  data:number = 0
+}
+
+@Component
+export struct WarnPage {
+  title:string = "warning!!"
+  @Link warn_data:Datamodel
+  @State have_air_condition:boolean = false
+  @Link is_warn:boolean
+  @State a_id:number = 0
+  aboutToAppear(): void {
+    for(let r of this.warn_data.arr){
+      for(let f of r.furniture_s){
+        if(f.type_id<4000&&f.type_id>2999){
+          this.have_air_condition = true
+          this.a_id = f.type_id
+        }
+      }
+    }
+
+  }
+  build() {
+    Stack() {
+      if(this.warn_data.type == 'temp'){
+        Column(){
+          Text(this.warn_data.data.toString())
+            .fontColor(Color.Red)
+            .fontSize(100)
+          Text("***温度过高***")
+          Text("解决方案：目前温度已超过安全标准，请立即行动起来！！")
+          Button(this.have_air_condition?"开空调":"开窗")
+            .onClick(()=>{
+              if(this.have_air_condition){
+                //传输开空调指令
+                tcp.send_on(this.a_id)
+              }
+              this.is_warn = false
+            })
+        }
+      }
+      if(this.warn_data.type == 'humi'){
+        Column(){
+          Text(this.warn_data.data.toString())
+            .fontColor(Color.Red)
+            .fontSize(100)
+          Text("***湿度过高***")
+          Text("解决方案：目前温度已超过安全标准，请立即行动起来！！")
+          Button(this.have_air_condition?"开空调，并开始除湿":"开窗")
+            .onClick(async ()=>{
+              if(this.have_air_condition){
+                //传输开空调指令
+                await tcp.send_on(this.a_id)
+              }
+              tcp.getData()
+              this.is_warn = false
+            })
+        }
+      }
+
+      /* Text(this.title)
+         .fontSize(30)
+         .fontColor(Color.Red)
+       Text(this.warn_data.type)
+         .id('WarnPageHelloWorld')
+         .fontSize($r('app.float.page_text_font_size'))
+         .fontWeight(FontWeight.Bold)
+       Button(this.have_air_condition?"开空调":"解决方案")
+         .onClick(()=>{
+           this.is_warn = false
+         })*/
+    }
+    .height('100%')
+    .width('100%')
+    .backgroundColor(Color.White)
+  }
+}
