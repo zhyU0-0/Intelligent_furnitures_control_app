@@ -110,7 +110,6 @@ export class _Udp{
     udp11.on('message', async (data) => {
         console.log('UDP ==on message!'+JSON.stringify(data.message.byteLength));
       let str = decoder.decodeToString(new Uint8Array(data.message));
-
         // 处理接收到的数据
       AlertDialog.show({message:decoder.decodeToString(new Uint8Array(data.message))})
       console.log("UDP ==on:"+str)

@@ -1,5 +1,7 @@
+import { LocalStoraga } from "../entryability/LocalStorage";
 import { RoomDatabase } from "../entryability/RdbStorage";
 import { tcp } from "../pages/Index";
+import { API_DeepSeek } from "../pages/OpenAI_Page";
 import { _IoTad } from "../pages/scan_devices";
 //import { tcp, udp } from "../pages/Index";
 import {  Furniture, room } from "./classes";
@@ -851,6 +853,67 @@ struct show_f{
       .listDirection(Axis.Horizontal)
       .width("100%").height(60)
     }
+
+  }
+}
+
+@Component
+export struct my_DeepSeek{
+
+  @State question:string = ''
+  @Link _height:string
+  @Link is_show:boolean
+  @State history:string  = ''
+  @Link _height_AI:string
+  AI:API_DeepSeek = new API_DeepSeek()
+  localstorage:LocalStoraga = new LocalStoraga("AI")
+  async aboutToAppear() {
+    if(await this.localstorage.getDate("history") != false){
+      this._height = "40%"
+      this.history = await this.localstorage._getDate_("history")
+    }
+
+  }
+  build() {
+    Stack({alignContent:Alignment.BottomEnd}){
+      Column()
+        .height("100%").width("100%").backgroundColor("#9c000000")
+        .onClick(()=>{
+          animateTo({duration:500},()=>{
+            this._height = "10%"
+            this._height_AI = "0%"
+            this.is_show = false
+          })
+        })
+      Column(){
+        Scroll() {
+          Text(this.history)
+            .textAlign(TextAlign.Start)
+            .padding(10)
+            .width('100%')
+        }.width("100%").height(this._height)
+        Row(){
+          if(this.is_show){
+            TextInput({placeholder:"请输入问题"}).width("80%").height("10%")
+              .onChange((value)=>{this.question = value})
+          }
+          Button("提问")
+            .onClick(async ()=>{
+              if(this.question != ''){
+                this.history = await this.AI.chat(this.question)
+                this.localstorage.setDate("history",this.history)
+              }else {
+                this.history = "请输入问题"
+              }
+              animateTo({duration:200},()=>{
+                this._height = "40%"
+              })
+            })
+        }.justifyContent(FlexAlign.End).backgroundColor(Color.White).width("100%")
+      }.justifyContent(FlexAlign.End).borderRadius({topLeft:10,topRight:10}).backgroundColor(Color.White)
+
+      //.animation({duration:200})
+    }.width("100%").height(this._height_AI)
 
   }
 }

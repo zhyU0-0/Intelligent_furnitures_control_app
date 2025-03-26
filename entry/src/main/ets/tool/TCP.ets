@@ -150,7 +150,7 @@ export class _Tcp{
       console.log('TCP ==SendError '+e)
     }
     //Data_Tcp = "{\"temp\":31,\"humi\":50}"
-    Data_Tcp = "{\"temp\":50,\"humi\":29}/{\"id\":3001,\"a_temp\":25,\"switch\":1,\"is_dry\":\"1\"}/{\"id\":1001,\"lighting\":5,\"switch\":1}/{\"id\":2001,\"switch\":1}/{}"
+    Data_Tcp = "{\"temp\":20,\"humi\":29}/{\"id\":3001,\"a_temp\":25,\"switch\":1,\"is_dry\":\"1\"}/{\"id\":1001,\"lighting\":5,\"switch\":1}/{\"id\":2001,\"switch\":1}/{}"
     return Data_Tcp
   }
 

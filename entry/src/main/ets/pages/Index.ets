@@ -2,7 +2,7 @@ import { McLineChart, Options } from '@mcui/mccharts'
 import util from '@ohos.util';
 import router from '@ohos.router';
 import { air_condition, Furniture, room } from '../tool/classes';
-import { displayRoom} from '../tool/component';
+import { displayRoom, my_DeepSeek} from '../tool/component';
 import { LocalStoraga } from '../entryability/LocalStorage';
 import { _Udp } from '../tool/UDP';
 import { Data_Tcp, _Tcp } from '../tool/TCP';
@@ -69,9 +69,6 @@ struct homepage{
 
 
   async aboutToAppear() {
-
-
-
     this.localAddr = {
       family: 1,
       port: 8889,
@@ -397,14 +394,15 @@ struct userpage{
 //////////////////////////////*********************///////////////////////////////////////
 @Entry
 @Component
-
 struct Index {
 
   @State selectnumber:number = 0;
   @State is_show_humidity:boolean = false
   @State is_warn:boolean = false
   @State warn_data:Datamodel={type:'',arr:[],data:0}
-
+  @State _height_AI:string = "0%"
+  @State is_show_AI:boolean = false
+  @State _height_AI_com:string = '10%'
 
   @Builder
   MyBuilder_user (title:string,num:number){
@@ -486,10 +484,26 @@ struct Index {
       .width('100%')
       .backgroundColor("#d7e7ff")
 
+
+      Button("AI")
+        .onClick(()=>{
+          this.is_show_AI = true
+          animateTo({duration:500},()=>{
+            this._height_AI = "100%"
+          })
+        })
+        .position({x:"83%",y:"80%"})
+        .width(60)
+        .height(60)
+        .borderRadius(30)
+
+      if(this.is_show_AI){
+        my_DeepSeek({is_show:this.is_show_AI,_height_AI:this._height_AI,_height:this._height_AI_com})
+      }
+      //最上层
       if(this.is_warn){
         WarnPage({warn_data:this.warn_data,is_warn:this.is_warn})
       }
-
     }
     .height('100%')
     .width('100%')

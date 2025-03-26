@@ -36,6 +36,12 @@ export class LocalStoraga{
 
     return result
   }
+  public async _getDate_(date_name:string):Promise<string>{
+    let preferences = await this.getPreferences()
+    let result = await preferences.get(date_name,false)
+
+    return result.toString()
+  }
   //读取
   public async clare_Date(date_name:string){
     let preferences = await this.getPreferences()

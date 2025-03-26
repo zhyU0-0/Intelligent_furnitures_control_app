@@ -70,6 +70,72 @@ export class ChatResponse{
     this.id = id
   }
 }
+
+export class API_DeepSeek{
+  title: string = '使用RCP调用OpenAI接口实现智能助手';
+  //连接、通讯历史记录
+  msgHistory: string = ''
+  //提问的问题
+  question: string = ""
+  //基地址
+  baseUrl: string = "https://api.deepseek.com/v1"
+  //API KEY
+  apiKey: string = "sk-8304f07190544c7682b42db3c894a3d6"
+  //模型名称
+  modelName: string = "deepseek-chat"
+  chaHistory: ArrayList<Message> = new ArrayList()
+  chatAPI: string = "/chat/completions"
+  scroll: Scroller = new Scroller()
+
+
+  async chat(question:string):Promise<string> {
+    let cfg: rcp.SessionConfiguration = {
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    }
+
+    let chatInfo = this.getChatInfo(question)
+    let postInfo = JSON.stringify(chatInfo)
+    const session = rcp.createSession(cfg)
+    await session.post(this.baseUrl + this.chatAPI, postInfo)
+      .then(resp => {
+        console.log("resp::"+resp.toString())
+        if (resp.statusCode == 200) {
+          let chatResp = resp.toJSON() as ChatResponse;
+
+          this.msgHistory += `我：${question}\r\n`
+          this.msgHistory += `AI：${chatResp.choices[0].message.content}\r\n`
+          this.msgHistory += `(共消耗token:${chatResp.usage.total_tokens}，其中提问：${chatResp.usage.prompt_tokens},回答：${chatResp.usage.completion_tokens})\r\n`
+          return this.msgHistory
+        }else {
+          console.log("History::"+this.msgHistory)
+          return "网络异常，请稍后再试"
+        }
+        console.log("History::"+this.msgHistory)
+        return this.msgHistory
+        console.log("success:cord:" + JSON.stringify(resp))
+
+      })
+      .catch((err: BusinessError) => {
+        console.error(`err: err code is ${err.code}, err message is ${JSON.stringify(err)}`);
+        return this.msgHistory
+      })
+    return this.msgHistory
+  }
+
+  getChatInfo(question:string) {
+    let newMessage = new Message("user", question)
+    this.chaHistory.add(newMessage)
+    let chatInfo: ChatInfo = new ChatInfo(this.modelName, this.chaHistory.convertToArray())
+    return chatInfo
+  }
+  getHistory(){
+    console.log("History::"+this.msgHistory)
+    return this.msgHistory
+  }
+}
 @Entry
 @Component
 export struct OpenAI {

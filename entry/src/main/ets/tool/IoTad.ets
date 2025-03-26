@@ -63,6 +63,20 @@ interface _body3_push_curtain{
 }
 interface _paras3{ curtain:string }
 
+interface _body4_push_air_condition{
+  service_id:string
+  command_name:string
+  paras:_paras5
+}
+interface _paras5{ aircondition:number }
+
+interface _body5_push_fan{
+  service_id:string
+  command_name:string
+  paras:_paras6
+}
+interface _paras6{ fan:string }
+
 export class IoTad{
   Token:string = ''
   DEVICE_ID:string|undefined = "67df87e02902516e866a169d_1001"
@@ -262,7 +276,7 @@ export class IoTad{
 
   }
 
-  async set_curtain_by_id(commind:string,id?:number){
+  async set_curtain_by_id(commind_on_or_off:string,id?:number){
 
     const httpRequest = http.createHttp();
     const url = `https://${IOTDA_ENDPOINT}/v5/iot/${PROJECT_ID}/devices/${this.DEVICE_ID}/commands`;
@@ -271,7 +285,7 @@ export class IoTad{
       command_name: "set_curtain", // 命令名称
       paras: {
         // 命令参数
-        curtain:commind
+        curtain:commind_on_or_off
       },
     };
 
@@ -302,7 +316,85 @@ export class IoTad{
 
   }
 
+  async set_air_condition_by_id(commind:number,id?:number){
 
+    const httpRequest = http.createHttp();
+    const url = `https://${IOTDA_ENDPOINT}/v5/iot/${PROJECT_ID}/devices/${this.DEVICE_ID}/commands`;
+    const body :_body4_push_air_condition = {
+      service_id: "device_ctrl", // 设备模型中的服务 ID
+      command_name: "set_aircondition", // 命令名称
+      paras: {
+        // 命令参数
+        aircondition:commind
+      },
+    };
+
+    console.log("body:::"+JSON.stringify(body))
+    try {
+      const response = await httpRequest.request(url, {
+        method: http.RequestMethod.POST,
+        header: {
+          'Content-Type': 'application/json',
+          'X-Auth-Token': this.Token,
+        },
+        extraData: JSON.stringify(body),
+      });
+
+      console.log("Message sent::"+response.result)
+      if (response.responseCode === 200) {
+        console.log('Message sent successfully:', response.result.toString());
+        return 1
+      } else {
+        return -1
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      return -1
+    } finally {
+      httpRequest.destroy();
+    }
+
+  }
+
+  async set_fan_by_id(commind_on_or_off:string,id?:number){
+
+    const httpRequest = http.createHttp();
+    const url = `https://${IOTDA_ENDPOINT}/v5/iot/${PROJECT_ID}/devices/${this.DEVICE_ID}/commands`;
+    const body :_body5_push_fan = {
+      service_id: "device_ctrl", // 设备模型中的服务 ID
+      command_name: "set_aircondition", // 命令名称
+      paras: {
+        // 命令参数
+        fan:commind_on_or_off
+      },
+    };
+
+    console.log("body:::"+JSON.stringify(body))
+    try {
+      const response = await httpRequest.request(url, {
+        method: http.RequestMethod.POST,
+        header: {
+          'Content-Type': 'application/json',
+          'X-Auth-Token': this.Token,
+        },
+        extraData: JSON.stringify(body),
+      });
+
+      console.log("Message sent::"+response.result)
+      if (response.responseCode === 200) {
+        console.log('Message sent successfully:', response.result.toString());
+        return 1
+      } else {
+        return -1
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      return -1
+    } finally {
+      httpRequest.destroy();
+    }
+
+  }
 
 }
 
