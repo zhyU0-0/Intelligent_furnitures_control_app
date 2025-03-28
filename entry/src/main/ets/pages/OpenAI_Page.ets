@@ -105,10 +105,12 @@ export class API_DeepSeek{
         if (resp.statusCode == 200) {
           let chatResp = resp.toJSON() as ChatResponse;
 
-          this.msgHistory += `我：${question}\r\n`
-          this.msgHistory += `AI：${chatResp.choices[0].message.content}\r\n`
-          this.msgHistory += `(共消耗token:${chatResp.usage.total_tokens}，其中提问：${chatResp.usage.prompt_tokens},回答：${chatResp.usage.completion_tokens})\r\n`
+          this.msgHistory += `${question}///`
+          this.msgHistory += `${chatResp.choices[0].message.content}///`
+          this.msgHistory += `(共消耗token:${chatResp.usage.total_tokens}，其中提问：${chatResp.usage.prompt_tokens},回答：${chatResp.usage.completion_tokens})::::`
+          console.log("History::"+this.msgHistory)
           return this.msgHistory
+
         }else {
           console.log("History::"+this.msgHistory)
           return "网络异常，请稍后再试"
@@ -124,7 +126,6 @@ export class API_DeepSeek{
       })
     return this.msgHistory
   }
-
   getChatInfo(question:string) {
     let newMessage = new Message("user", question)
     this.chaHistory.add(newMessage)

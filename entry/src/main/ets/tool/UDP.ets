@@ -3,7 +3,7 @@ import wifi from '@ohos.wifi';
 import util from '@ohos.util';
 
 //将ip地址转换成 192.168.X.X 格式
-function resolveIP(ip:number):string{
+export function resolveIP(ip:number):string{
   if(ip<0||ip>0xFFFFFFFF){
     return '0'
   }
@@ -38,6 +38,7 @@ export class _Udp{
   async bindOption(){
     //绑定
     let promise = udp11.bind(this.localAddr)
+
     //判断绑定是否成功
     promise.then(()=>{
       console.log('udp bind success')

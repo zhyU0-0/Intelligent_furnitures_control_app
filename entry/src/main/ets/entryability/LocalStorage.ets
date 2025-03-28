@@ -38,7 +38,7 @@ export class LocalStoraga{
   }
   public async _getDate_(date_name:string):Promise<string>{
     let preferences = await this.getPreferences()
-    let result = await preferences.get(date_name,false)
+    let result = await preferences.get(date_name,'')
 
     return result.toString()
   }

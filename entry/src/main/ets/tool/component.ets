@@ -629,12 +629,15 @@ export struct displayRoom {
           }
           .tabBar("全屋")
           ForEach(this.arr_room, (item: room, index) => {
-            TabContent() {
-              myList({room1:this.arr_room[index],arr_fnt:this.arr_room[index].furniture_s,index:index,is_sleep:this.is_sleep})
+            if(item.name != "null"){
+              TabContent() {
+                myList({room1:this.arr_room[index],arr_fnt:this.arr_room[index].furniture_s,index:index,is_sleep:this.is_sleep})
+              }
+              .tabBar(item.name)
+              .width(200)
+              .height(10)
             }
-            .tabBar(item.name)
-            .width(200)
-            .height(10)
+
 
 
           })
@@ -669,20 +672,26 @@ struct control_lights{
   build() {
     Column(){
       Button().onClick(()=>{this.is_show = false})
-      List(){
+      if(this.arr_room[0].name != 'null'){
+        List(){
 
-        ForEach(this.arr_room,(item:room)=>{
-          ListItem(){
-            Column(){
-              Text(item.name)
-              mySliber({_room:item})
+          ForEach(this.arr_room,(item:room)=>{
 
-            }.height(250).padding(20).borderRadius(5)
-            .backgroundColor(Color.Pink)
-          }
-        })
+            ListItem(){
+              Column(){
+                Text(item.name)
+                mySliber({_room:item})
 
-      }.lanes(4)
+              }.height(250).padding(20).borderRadius(5)
+              .backgroundColor(Color.Pink)
+            }
+          })
+
+        }.lanes(4)
+      }else{
+        Text("还没有房间哦")
+      }
+
 
     }.backgroundColor(Color.White)
     .width("100%").height("100%")
@@ -800,9 +809,33 @@ struct control_curtain{
       Tabs(){
         ForEach(this.arr_room,(item:room)=>{
           TabContent(){
+            Column(){
+              Text(item.name)
+              List(){
+                ForEach(item.furniture_s,(item:Furniture)=>{
+                  if(item.type_id>1999&&item.type_id<3000){
+                    ListItem(){
+                      Row(){
+                        Text(item.name)
+                        Toggle({ type: ToggleType.Switch, isOn:item.switch? true:false })
+                          .onClick(() => {
+                            if (!item.switch) {
+                              item.switch = 1
+                            } else {
+                              item.switch = 0
+                            }
+                          })
+                      }.backgroundColor(Color.White).width("100%").padding(10)
+                    }
+                  }
+
+
+                })
+              }.lanes(2)
+            }.backgroundColor(Color.Pink)
           }.tabBar(item.name)
         })
-      }.height("30%")
+      }.height("30%").vertical(true)
       Button("on").height("10%")
         .onClick(()=>{
           _IoTad.set_curtain_by_id("on")
@@ -811,14 +844,7 @@ struct control_curtain{
         .onClick(()=>{
           _IoTad.set_curtain_by_id("off")
         })
-      Button("8888").height("10%")
-        .onClick(()=>{
-          _IoTad.set_LED_brightness_by_id(8888)
-        })
-      Button('1').height("10%")
-        .onClick(()=>{
-          _IoTad.set_LED_brightness_by_id(1)
-        })
+
 
     }.backgroundColor(Color.White)
     .width("100%").height("100%")
@@ -867,10 +893,22 @@ export struct my_DeepSeek{
   @Link _height_AI:string
   AI:API_DeepSeek = new API_DeepSeek()
   localstorage:LocalStoraga = new LocalStoraga("AI")
+  @State TextList:string[] = []
   async aboutToAppear() {
     if(await this.localstorage.getDate("history") != false){
+
       this._height = "40%"
       this.history = await this.localstorage._getDate_("history")
+      console.log("history::"+this.history)
+      for(let message of this.history.split("::::")){
+        if(message.split("///")[0] != ''){
+          this.TextList.push(message.split("///")[0])
+        }
+        if(message.split("///")[1] != ''){
+          this.TextList.push(message.split("///")[1])
+        }
+
+      }
     }
 
   }
@@ -886,11 +924,48 @@ export struct my_DeepSeek{
           })
         })
       Column(){
-        Scroll() {
-          Text(this.history)
-            .textAlign(TextAlign.Start)
-            .padding(10)
-            .width('100%')
+        List() {
+
+          ForEach(this.TextList,(item:string,value)=>{
+            ListItem(){
+              if(value%2 == 0){
+                //我说的话
+                if(item != "[object Promise]"){
+                  Row(){
+                    Text(item)
+                      .fontColor(Color.White)
+                      .backgroundColor(Color.Blue)
+                      .borderRadius(10)
+                      .padding(10)
+
+                    Column()
+                      .width(10)
+                    Column()//我的头像
+                      .width(50).borderRadius(25).height(50).backgroundColor(Color.Blue)
+                  }.justifyContent(FlexAlign.End)
+                  .width("100%").padding(10)
+                }
+
+              }else{
+                //Ai的回答
+                Row(){
+                  Column()//ai的头像
+                    .width(50).borderRadius(25).height(50).backgroundColor("#ffcfcfcf")
+                  Column()
+                    .width(10)
+                  Text(item)
+                    .fontColor(Color.Black)
+                    .backgroundColor("#ffcfcfcf")
+                    .width("75%")
+                    .borderRadius(10)
+                    .padding(10)
+                }.justifyContent(FlexAlign.Start)
+                .width("100%").padding(10)
+              }
+            }
+
+          })
+
         }.width("100%").height(this._height)
         Row(){
           if(this.is_show){
@@ -900,14 +975,26 @@ export struct my_DeepSeek{
           Button("提问")
             .onClick(async ()=>{
               if(this.question != ''){
+                animateTo({duration:200},()=>{
+                  this._height = "40%"
+                })
+                this.TextList.push(this.question)
                 this.history = await this.AI.chat(this.question)
-                this.localstorage.setDate("history",this.history)
+                await this.localstorage.setDate("history",this.history)
+                this.TextList = []
+                for(let message of (this.history).split("::::")){
+                  if(message.split("///")[0] != ''||message.split("///")[0] == this.question){
+                    this.TextList.push(message.split("///")[0])
+                  }
+                  if(message.split("///")[1] != ''){
+                    this.TextList.push(message.split("///")[1])
+                  }
+
+                }
               }else {
                 this.history = "请输入问题"
               }
-              animateTo({duration:200},()=>{
-                this._height = "40%"
-              })
+
             })
         }.justifyContent(FlexAlign.End).backgroundColor(Color.White).width("100%")
       }.justifyContent(FlexAlign.End).borderRadius({topLeft:10,topRight:10}).backgroundColor(Color.White)

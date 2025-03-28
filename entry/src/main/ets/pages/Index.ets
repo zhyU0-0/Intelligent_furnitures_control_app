@@ -343,6 +343,7 @@ struct userpage{
   @State is_show_all_f:boolean = false
   @State f_arr:Furniture[] = []
   @State _height:string = "0%"
+  localstorage1 :LocalStoraga = new LocalStoraga("AI")
   aboutToAppear() {
 
     console.log("user",'into')
@@ -359,6 +360,7 @@ struct userpage{
         Text(this.username)
         Button("退出登录")
           .onClick(()=>{
+            this.localstorage1.setDate("history",'')
             this.localstorage.setDate('is_landing',false)
             router.replaceUrl({
               url:'pages/Open'
