@@ -6,8 +6,8 @@
     "pages/Register",
     "pages/Open",
     "pages/try",
-    "pages/WarnPage",
     "pages/get_furniture",
-    "pages/scan_devices"
+    "pages/scan_devices",
+    "pages/Search_devices"
   ]
 }

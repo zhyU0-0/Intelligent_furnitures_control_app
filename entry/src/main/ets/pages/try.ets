@@ -1,4 +1,6 @@
-import { search_device } from './Search_device'
+import { HttpRequest } from '../entryability/HttpFuntion';
+import { search_device } from './Search_devices'
+import { http } from '@kit.NetworkKit';
 
 
 @Component
@@ -6,7 +8,7 @@ struct Page {
 
   build() {
     Column(){
-      search_device()
+
     }
   }
 }
@@ -18,11 +20,6 @@ struct Index {
   @State checkboxEnabled: boolean = true;
   build() {
     Column({ space: 100 }) {
-      /*Checkbox()
-        //.contentModifier(new MyCheckboxStyle(Color.Red))
-        .onChange((value: boolean) => {
-          console.info('Checkbox change is' + value)
-        }).enabled(this.checkboxEnabled)*/
 
       Row() {
         Toggle({ type: ToggleType.Switch, isOn: true }).onClick(() => {
@@ -34,5 +31,10 @@ struct Index {
         })
       }.position({ x: 50, y: 130 })
     }.margin({top : 30})
+  }
+
+  http(){
+    let myhttp = http.createHttp()
+
   }
 }

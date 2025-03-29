@@ -19,6 +19,7 @@ let new_f_R_Id:number
 
 
 
+
 @Component
 export struct furniture_long {
 
@@ -143,12 +144,109 @@ export struct furniture_long {
 }
 
 @Component
+struct furniture_edit{
+
+  @Link furniturn:Furniture
+  @Link _height:string
+  @Prop room1:room
+  @Link is_show_f:boolean
+  @State Light_number:number = 0
+  @State o_f:Furniture = new Furniture('',0,0)
+  @State is_c:boolean = false
+
+  aboutToAppear(): void {
+    this.Light_number = this.furniturn.lighting
+    this.o_f = this.furniturn
+    console.log("ccc:::"+this.is_c)
+  }
+  build() {
+    Stack() {
+      Column() {
+        Row(){
+          Text(this.o_f.name)
+            .position({
+              y:50,
+              x:20
+            })
+          Text(this.o_f.type_id.toString())
+            .position({
+              y:50,
+              x:200
+            })
+
+        }
+        Row(){
+          Button('返回')
+            .onClick(() => {
+              this.is_show_f = false
+              animateTo({duration:500},()=>{this._height = '0%'})
+            })
+            .padding(5)
+            .width(100)
+        }.height(100)
+        .width('100%')
+        .justifyContent(FlexAlign.SpaceAround)
+
+
+      }
+      .height("55%")
+      .width('100%')
+      .borderRadius(20)
+      .backgroundColor(Color.White)
+      .justifyContent(FlexAlign.End)
+      if(this.o_f.type_id <2000 ){
+        Text("亮度："+this.Light_number.toString())
+          .position({
+            y:250,
+            x:20
+          })
+        if(this.o_f.lighting != 0){
+          Slider({value:this.furniturn.lighting,max:10,min:1})
+            .width('90%')
+            .showSteps(true)
+            .position({
+              x:20,
+              y:300
+            })
+            .onChange((value)=>{
+              this.furniturn.lighting = value
+              this.Light_number = value
+              console.log("LL:"+this.Light_number.toString())
+              tcp.sendLED_chang(value,this.furniturn.type_id)
+              this.o_f = this.furniturn
+              //udp.sendLED_chang(value)
+            })
+        }
+
+
+
+      }
+      if(this.o_f.type_id >2999 && this.o_f.type_id<4000){
+        Text("目前温度："+this.o_f.temp.toString())
+          .position({ y:250, x:20 })
+        Row() {
+          Button("处湿")
+        }
+        .width(80).height(40).borderRadius(5)
+        .position({y:350,x:20})
+        .backgroundColor(this.furniturn.is_dry?Color.Blue:Color.White)
+
+      }
+    }
+
+    .height(this._height)
+    .width('100%')
+    .backgroundColor('#9c000000')
+
+  }
+}
+@Component
 export struct add_furniture_page {
   @Link _height:string
   @Link arr: Furniture[]
   @State fur_name: string = ''
   @Link is_show: boolean
-  @Link index:number
+
   type:number = 0
 
   build() {
@@ -177,7 +275,6 @@ export struct add_furniture_page {
             if (this.fur_name != ''&&this.type != 0) {
               //数据库
               console.log('roomwwwwww')
-              //let new_f_R_Id = await Room_db.getRoomsIdByName(new_arr_rooms[this.index].name)
               console.log('roomwwwwww'+new_f_R_Id)
               let success = await Room_db.insertFuByRoomId(new_f_R_Id,this.fur_name,this.type)
               console.log('roomwwwwww  success'+success)
@@ -413,7 +510,7 @@ export struct myList {
           _height:this._height,
           arr: this.arr_fnt,
           is_show: this.show_add ,
-          index:this.index})
+          })
       }
       if(this.is_show_f){
         furniture_long({
@@ -533,6 +630,10 @@ export struct displayRoom {
   @State is_show_air_condition:boolean = false
   @State is_show_robot:boolean = false
   @State is_show_curtain:boolean = false
+  @State value:number = 0
+  @State is_edit:boolean = false
+  @State edit_f:Furniture = new Furniture("",0,0)
+  @State edit_height:string = '0%'
   l:number = 0
 
 
@@ -563,7 +664,7 @@ export struct displayRoom {
           TabContent(){
             Stack() {
               Column(){
-                show_f({arr:this.arr_room})
+                show_f({arr:this.arr_room,is_show_edit:this.is_edit,f:this.edit_f,h:this.edit_height})
               List() {
                 ListItem() {
                   Text("灯光控制")
@@ -623,7 +724,6 @@ export struct displayRoom {
               if (this.is_show_curtain) {
                 control_curtain({ arr_room: this.arr_room, is_show: this.is_show_curtain })
               }
-
             }
 
           }
@@ -637,8 +737,6 @@ export struct displayRoom {
               .width(200)
               .height(10)
             }
-
-
 
           })
 
@@ -657,6 +755,13 @@ export struct displayRoom {
 
       if(this.is_show_r){
         add_room_page({ arr: this.arr_room, is_show: this.is_show_r })
+      }
+      if(this.is_edit){
+        furniture_edit({
+          furniturn:this.edit_f,
+          is_show_f:this.is_edit,
+          _height:this.edit_height
+        })
       }
 
     }
@@ -763,6 +868,8 @@ struct control_air_condition{
 struct air_condition{
   @Prop item :room
   @State ex_a_c:boolean = false
+  @State is_show_add:boolean = false
+  @State _height:string = "0%"
   aboutToAppear(): void {
       for(let f of this.item.furniture_s){
         if(f.type_id>2999&&f.type_id<4000){
@@ -772,21 +879,38 @@ struct air_condition{
   }
   build() {
 
-    Column(){
-      if(this.ex_a_c){
-        Image($r("app.media.button1")).width(100).height(100)
-        Text("温度："+this.item.get_air_condition().temp)
-        Button("除湿")
-          .onClick(()=>{
-            //开启除湿模式
-          })
-      }else {
-        Text("该房间还没有录入空调哦")
-        Button("前往录入")
-          .onClick(()=>{
-            //录入逻辑
-          })
+    Stack(){
+      Column(){
+        if(this.ex_a_c){
+          Image($r("app.media.button1")).width(100).height(100)
+          Text("温度："+this.item.get_air_condition().temp)
+          Button("除湿")
+            .onClick(()=>{
+              //开启除湿模式
+            })
+        }else {
+          Text("该房间还没有录入空调哦")
+          Button("前往录入")
+            .onClick(async ()=>{
+              //录入逻辑
+              new_f_R_Id = await Room_db.getRoomsIdByName(this.item.name)
+              this.is_show_add = true
+              animateTo({duration:200},()=>{
+                this._height = "100%"
+              })
+
+            })
+        }
       }
+      if(this.is_show_add){
+        add_furniture_page({
+          arr:[],
+          is_show:this.is_show_add,
+
+          _height:this._height
+        })
+      }
+
 
 
     }
@@ -800,7 +924,6 @@ struct control_curtain{
   @Link arr_room:room[]
 
   aboutToAppear(): void {
-
 
   }
   build() {
@@ -821,8 +944,10 @@ struct control_curtain{
                           .onClick(() => {
                             if (!item.switch) {
                               item.switch = 1
+                              _IoTad.set_curtain_by_id("on")
                             } else {
                               item.switch = 0
+                              _IoTad.set_curtain_by_id("off")
                             }
                           })
                       }.backgroundColor(Color.White).width("100%").padding(10)
@@ -836,16 +961,6 @@ struct control_curtain{
           }.tabBar(item.name)
         })
       }.height("30%").vertical(true)
-      Button("on").height("10%")
-        .onClick(()=>{
-          _IoTad.set_curtain_by_id("on")
-        })
-      Button("off").height("10%")
-        .onClick(()=>{
-          _IoTad.set_curtain_by_id("off")
-        })
-
-
     }.backgroundColor(Color.White)
     .width("100%").height("100%")
   }
@@ -854,31 +969,64 @@ struct control_curtain{
 
 @Component
 struct show_f{
-  @Prop arr:room[]
+  @Link arr:room[]
   @State ex_condition:boolean = false
+  @State open_List:Furniture[] = []
+  @Link is_show_edit:boolean
+  @Link f:Furniture
+  @Link h:string
 
   async aboutToAppear(){
     console.log("f:::11")
-    for(let r of this.arr){
-      console.log("f:::11"+JSON.stringify(r))
-     this.ex_condition = r.ex_air_condition()
-    }
+    /*setTimeout(()=>{
+      this.arr.push(new room("",[new Furniture('',1,1002)]))
+    },1000)*/
+    setInterval(()=>{
+      this.open_List = []
+      console.log("f:::11"+JSON.stringify(this.arr))
+      for(let r of this.arr){
+        for (let f of r.furniture_s){
+          console.log("f:::11"+JSON.stringify(f))
+          if(f.switch == 1&&f.type_id>2999){
+            this.ex_condition = true
+            this.open_List.push(f)
+          }
+        }
+      }
+    },1000)
+
   }
 
   build() {
+
     if(this.ex_condition){
       List(){
+        ForEach(this.open_List,(item:Furniture)=>{
           ListItem(){
-            Column()
-              .height(50)
-              .width(50)
-              .borderRadius(25)
-              .backgroundColor(Color.Pink)
+            Column(){
+              Text(item.name)
+            }
+            .height(50)
+            .width(50)
+            .borderRadius(25)
+            .backgroundColor(Color.Pink)
+            .onClick(()=>{
+              this.is_show_edit = true
+              this.f = item
+              animateTo({duration:200},()=>{
+                this.h = "100%"
+              })
+            })
           }
+          ListItem().width(10)
+        })
+
       }
       .listDirection(Axis.Horizontal)
       .width("100%").height(60)
     }
+
+
 
   }
 }
@@ -891,6 +1039,7 @@ export struct my_DeepSeek{
   @Link is_show:boolean
   @State history:string  = ''
   @Link _height_AI:string
+  @State is_ark:boolean = false
   AI:API_DeepSeek = new API_DeepSeek()
   localstorage:LocalStoraga = new LocalStoraga("AI")
   @State TextList:string[] = []
@@ -969,33 +1118,44 @@ export struct my_DeepSeek{
         }.width("100%").height(this._height)
         Row(){
           if(this.is_show){
-            TextInput({placeholder:"请输入问题"}).width("80%").height("10%")
+            TextInput({placeholder:"请输入问题",text:this.question}).width("80%").height("10%")
               .onChange((value)=>{this.question = value})
+
           }
-          Button("提问")
-            .onClick(async ()=>{
-              if(this.question != ''){
-                animateTo({duration:200},()=>{
-                  this._height = "40%"
-                })
-                this.TextList.push(this.question)
-                this.history = await this.AI.chat(this.question)
-                await this.localstorage.setDate("history",this.history)
-                this.TextList = []
-                for(let message of (this.history).split("::::")){
-                  if(message.split("///")[0] != ''||message.split("///")[0] == this.question){
-                    this.TextList.push(message.split("///")[0])
+          if(this.is_ark){
+            Progress({ value: 0, total: 100, type: ProgressType.Ring })
+              .width(50).color(Color.White).backgroundColor('#ffbebebe')
+              .style({ strokeWidth: 10, status: ProgressStatus.LOADING })
+          }
+          else{
+            Button("提问")
+              .onClick(async ()=>{
+                if(this.question != ''){
+                  animateTo({duration:200},()=>{
+                    this._height = "40%"
+                  })
+                  this.is_ark = true
+                  this.TextList.push(this.question)
+                  this.history = await this.AI.chat(this.question)
+                  await this.localstorage.setDate("history",this.history)
+                  this.TextList = []
+                  for(let message of (this.history).split("::::")){
+                    if(message.split("///")[0] != ''||message.split("///")[0] == this.question){
+                      this.TextList.push(message.split("///")[0])
+                    }
+                    if(message.split("///")[1] != ''){
+                      this.TextList.push(message.split("///")[1])
+                    }
                   }
-                  if(message.split("///")[1] != ''){
-                    this.TextList.push(message.split("///")[1])
-                  }
-
+                  this.question = ''
+                  this.is_ark = false
+                }else {
+                  this.history = "请输入问题"
                 }
-              }else {
-                this.history = "请输入问题"
-              }
 
-            })
+              })
+          }
+
         }.justifyContent(FlexAlign.End).backgroundColor(Color.White).width("100%")
       }.justifyContent(FlexAlign.End).borderRadius({topLeft:10,topRight:10}).backgroundColor(Color.White)
 

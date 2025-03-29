@@ -14,6 +14,7 @@ import {  notificationManager } from '@kit.NotificationKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { _IoTad } from './scan_devices';
+import { scene } from './scene_page';
 
 
 const max_temp = 30
@@ -57,7 +58,7 @@ struct homepage{
   @State is_show_r:boolean = false
   @State is_sleep:boolean = false
   @State is_chang:boolean = false
-  @State arr_room:room[] = []
+  @Link arr_room:room[]
   @State is_show_humidity:boolean = false
   @State _height:string = "20%"
   @State backG:string = "app.media.back_house"
@@ -215,6 +216,11 @@ struct homepage{
     Menu(){
       MenuItem({content:'添加房间'}).onClick(()=>{
         this.is_show_r = true
+      })
+      MenuItem({content:'扫描设备'}).onClick(()=>{
+        router.pushUrl({
+          url:"pages/Search_devices"
+        })
       })
     }
   }
@@ -398,6 +404,7 @@ struct userpage{
 @Component
 struct Index {
 
+  @State arr_room:room[] = []
   @State selectnumber:number = 0;
   @State is_show_humidity:boolean = false
   @State is_warn:boolean = false
@@ -459,18 +466,19 @@ struct Index {
     Stack() {
       Column(){
         Tabs({ barPosition:BarPosition.End }){
+          //主页面
           TabContent(){
-            homepage({is_warn:this.is_warn,warn_data:this.warn_data})
+            homepage({is_warn:this.is_warn,warn_data:this.warn_data,arr_room:this.arr_room})
           }
           .tabBar(this.MyBuilder_home("主页",0))
 
-
+          //场景页面
           TabContent(){
-            OpenAI()
+            scene({arr_room:this.arr_room})
           }
           .tabBar(this.MyBuilder_add("更多",1))
 
-
+          //用户页面
           TabContent(){
             userpage()
           }.tabBar(this.MyBuilder_user("用户",2))
