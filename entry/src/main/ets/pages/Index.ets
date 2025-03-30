@@ -7,7 +7,6 @@ import { LocalStoraga } from '../entryability/LocalStorage';
 import { _Udp } from '../tool/UDP';
 import { Data_Tcp, _Tcp } from '../tool/TCP';
 import { RoomDatabase } from '../entryability/RdbStorage';
-import { OpenAI } from './OpenAI_Page';
 import socket from '@ohos.net.socket';
 import wifi from '@ohos.wifi';
 import {  notificationManager } from '@kit.NotificationKit';

@@ -1,4 +1,5 @@
 import { Furniture, room } from "../tool/classes"
+import { _IoTad } from "./scan_devices"
 
 @Entry
 @Component
@@ -67,7 +68,7 @@ struct scenes{
         List(){
           ListItem(){
             Row(){
-              Text("睡眠模式")
+              Text(this.scene)
               Button().onClick(()=>{
                 this.is_show = false
               })
@@ -77,13 +78,24 @@ struct scenes{
           ForEach(this.List_f,(item:Furniture,value)=>{
             ListItem(){
               Row(){
-                Text(item.name)
+                Text(item.name).fontSize(20)
+                Toggle({ type: ToggleType.Switch, isOn:item.switch? true:false })
+                  .onClick(() => {
+                    if (!item.switch) {
+                      item.switch = 1
+                      _IoTad.set_curtain_by_id("on")
+                    } else {
+                      item.switch = 0
+                      _IoTad.set_curtain_by_id("off")
+                    }
+                  })
               }
-                .width("100%").height("20%")
+                .width("90%").height("20%").borderRadius(5)
             }
           })
         }
       }.width("100%").height(this._height).backgroundColor(Color.White)
+      .backgroundColor(Color.Pink)
     }
   }
 }
