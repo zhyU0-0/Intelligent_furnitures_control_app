@@ -1,5 +1,5 @@
 import relationalStore from '@ohos.data.relationalStore';
-import { nameId } from '../pages/Open';
+
 import { air_condition, Furniture, room } from '../tool/classes';
 
 

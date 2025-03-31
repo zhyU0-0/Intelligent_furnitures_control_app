@@ -9,16 +9,21 @@ import { webview } from '@kit.ArkWeb';
 import { http } from '@kit.NetworkKit';
 
 
-@Entry
 @Component
-struct Index {
+export struct face_cam {
   @State chooseImage: PixelMap | undefined = undefined
   @State dataValues: string = ''
   @State is_choose:boolean = false
+  @Link is_show:boolean
   private baseUrl: string = 'http://192.168.204.68';
   buffer:string|undefined = undefined
   build() {
     Column() {
+      Button("返回")
+        .onClick(()=>{
+          this.is_show = false
+        })
+
       if(this.is_choose){
         Image(this.chooseImage)
           .objectFit(ImageFit.Fill)
@@ -63,6 +68,7 @@ struct Index {
     .width('100%')
     .height('100%')
     .justifyContent(FlexAlign.Center)
+    .backgroundColor(Color.White)
   }
 
   private async selectImage() {
@@ -100,28 +106,28 @@ struct Index {
     )
   }
   async pixelMapToBuffer(pixelMap: image.PixelMap): Promise<ArrayBuffer> {
-  try {
-    // 1. 创建PixelMap打包器
-    const packer = image.createImagePacker();
+    try {
+      // 1. 创建PixelMap打包器
+      const packer = image.createImagePacker();
 
-    // 2. 设置输出格式（JPEG/PNG）
-    const options: image.PackingOption = {
-      format: "image/jpeg", // 或 "image/png"
-      quality: 90          // JPEG质量 (0-100)
-    };
+      // 2. 设置输出格式（JPEG/PNG）
+      const options: image.PackingOption = {
+        format: "image/jpeg", // 或 "image/png"
+        quality: 90          // JPEG质量 (0-100)
+      };
 
-    // 3. 执行转换
+      // 3. 执行转换
 
-    const arrayBuffer:ArrayBuffer = await packer.packing(pixelMap, options);
-    console.log("buffer:::"+arrayBuffer.byteLength)
-    this.buffer = await arrayBufferToBase64(arrayBuffer)
-    return arrayBuffer;
+      const arrayBuffer:ArrayBuffer = await packer.packing(pixelMap, options);
+      console.log("buffer:::"+arrayBuffer.byteLength)
+      this.buffer = await arrayBufferToBase64(arrayBuffer)
+      return arrayBuffer;
 
-  } catch (error) {
-    console.error('转换失败:', (error as BusinessError).message);
-    //throw error;
-    return new ArrayBuffer(1)
-  }
+    } catch (error) {
+      console.error('转换失败:', (error as BusinessError).message);
+      //throw error;
+      return new ArrayBuffer(1)
+    }
   }
   async sendCommand(cmd: string, val?: string): Promise<boolean> {
     try {
@@ -170,15 +176,15 @@ interface body{
 struct CameraPage {
   private ip: string = '192.168.204.68';
   private port: number = 81;
-//  //${this.ip}:${this.port}/stream
+  //  //${this.ip}:${this.port}/stream
   build() {
     Column() {
       Web({ src: `https://www.baidu.com/`,controller:new webview.WebviewController })
         .width('100%')
         .height(300)
-        /*.onControllerReady((controller) => {
-          controller.loadUrl(`http://${this.ip}:${this.port}/stream`);
-        })*/
+      /*.onControllerReady((controller) => {
+        controller.loadUrl(`http://${this.ip}:${this.port}/stream`);
+      })*/
     }
   }
 }
@@ -194,5 +200,3 @@ async function arrayBufferToBase64(buffer: ArrayBuffer): Promise<string> {
   console.log("buffer:::1"+binary.toString())
   return binary;
 }
-
-

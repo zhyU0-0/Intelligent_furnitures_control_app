@@ -5,8 +5,8 @@ import { API_DeepSeek } from "../pages/OpenAI_Page";
 import { _IoTad } from "../pages/scan_devices";
 //import { tcp, udp } from "../pages/Index";
 import {  Furniture, room } from "./classes";
-
-
+import { router } from "@kit.ArkUI";
+import { face_cam } from "../pages/face_cma";
 
 
 let new_arr_rooms:room[]
@@ -691,7 +691,7 @@ export struct displayRoom {
                 })
 
                 ListItem() {
-                  Text("机器人控制")
+                  Text("门锁")
                 }
                 .width("100%")
                 .height(250)
@@ -700,6 +700,8 @@ export struct displayRoom {
                 .padding(10)
                 .onClick(() => {
                   this.is_show_robot = true
+                  console.log("oooooooooo")
+                  console.log("oooooooooo")
                 })
 
                 ListItem() {
@@ -723,6 +725,9 @@ export struct displayRoom {
               }
               if (this.is_show_curtain) {
                 control_curtain({ arr_room: this.arr_room, is_show: this.is_show_curtain })
+              }
+              if(this.is_show_robot){
+                face_cam({is_show:this.is_show_robot})
               }
             }
 
@@ -840,7 +845,7 @@ struct mySliber{
 
 
 @Component
-struct control_air_condition{
+export struct control_air_condition{
   @Link is_show:boolean
   @Link arr_room:room[]
 

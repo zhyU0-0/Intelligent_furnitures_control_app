@@ -2,7 +2,6 @@
   "src": [
     "pages/Index",
     "pages/OpenAI_Page",
-    "pages/facePage",
     "pages/Register",
     "pages/Open",
     "pages/try",
