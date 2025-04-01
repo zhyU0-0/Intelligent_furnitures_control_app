@@ -24,11 +24,7 @@ let new_f_R_Id:number
 export struct furniture_long {
 
   @Link _height:string
-
-  //@Link f_type:number
   @Prop room1:room
-  //@Link f_name:string
-  //@Link f_switch:number
   @Link is_show_f:boolean
   @Link arr_f:Furniture[]
   @Link index_f:number
@@ -37,13 +33,9 @@ export struct furniture_long {
   @Link is_chang:boolean
   @State is_c:boolean = true
   @State o_f:Furniture = new Furniture('',0,0)
-
-  //@Link f_brightness:number
-
   @Link t_f:Furniture
 
   aboutToAppear(): void {
-
     this.Light_number = this.arr_f[this.index_f].lighting
    this.o_f = this.arr_f[this.index_f]
   }
@@ -119,15 +111,12 @@ export struct furniture_long {
               //udp.sendLED_chang(value)
             })
         }
-
-
-
       }
       if(this.o_f.type_id >2999 && this.o_f.type_id<4000){
         Text("目前温度："+this.o_f.temp.toString())
           .position({ y:250, x:20 })
         Row() {
-          Button("处湿")
+          Button("除湿")
         }
         .width(80).height(40).borderRadius(5)
         .position({y:350,x:20})
@@ -246,7 +235,6 @@ export struct add_furniture_page {
   @Link arr: Furniture[]
   @State fur_name: string = ''
   @Link is_show: boolean
-
   type:number = 0
 
   build() {
@@ -271,6 +259,8 @@ export struct add_furniture_page {
             y:100
           })
         Button('完成')
+          .backgroundImage($r('app.media.bottom_bg2'))
+          .backgroundImageSize(ImageSize.Cover)
           .onClick(async () => {
             if (this.fur_name != ''&&this.type != 0) {
               //数据库
@@ -296,8 +286,9 @@ export struct add_furniture_page {
       .height("55%")
       .width('100%')
       .borderRadius(20)
-      .backgroundColor(Color.White)
-      .justifyContent(FlexAlign.End)
+      .backgroundImage($r('app.media.bottom_bg1'))
+      .backgroundImageSize(ImageSize.Cover)
+      .justifyContent(FlexAlign.End);
     }
 
     .height(this._height)
@@ -343,6 +334,8 @@ export struct add_room_page {
           })
         Row(){
           Button('完成')
+            .backgroundImage($r('app.media.bottom_bg2'))
+            .backgroundImageSize(ImageSize.Cover)
             .onClick(async () => {
               if (this.fur_name != '') {
                 let success = await Room_db.insertRoom(new room(this.fur_name, []))
@@ -365,18 +358,17 @@ export struct add_room_page {
             })
             .padding(5)
             .width(100)
-        }.height(100)
+        }
+        .height(100)
         .width('100%')
         .justifyContent(FlexAlign.SpaceAround)
-
-
-
       }
       .height("55%")
       .width('100%')
       .borderRadius(20)
-      .backgroundColor(Color.White)
-      .justifyContent(FlexAlign.End)
+      .backgroundImage($r('app.media.bottom_bg1'))
+      .backgroundImageSize(ImageSize.Cover)
+      .justifyContent(FlexAlign.End);
     }
 
     .height('100%')
@@ -435,13 +427,6 @@ export struct myList {
                         this._height = "100%"
 
                       })
-                      /*this.f_name = item.name
-                      this.f_type = item.type_id
-
-                      this.f_switch = item.switch
-                      if(this.f_type <2000){
-                          this._brightness = item.lighting
-                      }*/
                       console.log('Long_touch')
                     }
                   }
@@ -493,13 +478,12 @@ export struct myList {
               .height('100%')
               .width('100%')
           }
-            .height(100)
-            .width("90%")
-            .padding(10)
-            .margin(12)
-            .backgroundColor("#ab879fa0")
-            .borderRadius(20)
-
+          .height(100)
+          .width("90%")
+          .padding(10)
+          .margin(12)
+          .backgroundColor("#ffb6e7ff")
+          .borderRadius(20);
         }
       }
       .height("90%")
@@ -527,12 +511,12 @@ export struct myList {
     }.onClick(()=>{
       new_arr_f = this.arr_fnt
     })
-
   }
 }
 
 @Component
 export struct myRow {
+
   @State item1: Furniture = new Furniture("w", 0,0)
   @State is_clicknum: number = 0;
   @Prop is_sleep:boolean
@@ -543,21 +527,21 @@ export struct myRow {
       Stack(){
         Row() {
           Text(this.item1.name)
-
-          Image($r('app.media.curtain'))
+          Image($r('app.media.curtain6'))
             .height(20)
             .width(20)
-            .fillColor('#ff1c6670')
+            .fillColor('rgb(70, 100, 180)');
         }
         .justifyContent(FlexAlign.SpaceAround)
         .height(100)
         .width("100%")
         .margin(2)
         .padding(10)
-        .backgroundColor(this.item1.switch ? '#ffe8efff' : "#ff9caeca")
+        .backgroundImage(this.item1.switch?$r('app.media.furniture_bg2') :$r('app.media.furniture_bg'))
+        .backgroundImageSize(ImageSize.Cover)
         .borderRadius(20)
         .borderWidth(2)
-        .borderColor(this.item1.switch ? '#0080f5' : "#ff9caeca")
+        .borderColor(this.item1.switch? 'rgb(70, 100, 180)' : "#009caeca");
         /*.onClick(() => {
           this.is_clicknum += 1
           console.log("item", this.item1.switch)
@@ -571,8 +555,6 @@ export struct myRow {
             //tcp.sendLEDon(this.item1.type_id)
           }
         })*/
-
-
       }
 
 
@@ -580,38 +562,21 @@ export struct myRow {
       Stack(){
         Row() {
           Text(this.item1.name)
-          Image($r('app.media.light'))
+          Image($r('app.media.light2'))
             .height(20)
             .width(20)
-            .fillColor('#ff1c6670')
+            .fillColor('rgb(70, 100, 180)');
         }
         .justifyContent(FlexAlign.SpaceAround)
         .height(100)
         .width("100%")
         .margin(2)
         .padding(10)
-        .backgroundColor(this.item1.switch?'#ffe8efff' : "#ff9caeca")
+        .backgroundImage(this.item1.switch?$r('app.media.furniture_bg2') :$r('app.media.furniture_bg'))
+        .backgroundImageSize(ImageSize.Cover)
         .borderRadius(20)
         .borderWidth(2)
-        .borderColor(this.item1.switch ? '#0080f5' : "#ff9caeca")
-        /*.onClick(() => {
-          this.is_clicknum += 1
-          console.log("item", this.item1.switch)
-          if (this.item1.switch) {
-            this.is_sleep = true
-            this.item1.close()
-            //udp.sendLEDon(this.item1.type_id)
-            //tcp.sendLEDon(this.item1.type_id)
-          } else {
-            this.is_sleep = false
-            this.item1.open()
-            //udp.sendLEDoff(this.item1.type_id)
-            //tcp.sendLEDon(this.item1.type_id)
-          }
-        })*/
-
-
-
+        .borderColor(this.item1.switch? 'rgb(70, 100, 180)' :"#009caeca" );
       }
     }
     }
@@ -663,41 +628,49 @@ export struct displayRoom {
         Tabs() {
           TabContent(){
             Stack() {
+              Image($r('app.media.bottom_bg1'))
+                .objectFit(ImageFit.Cover);
               Column(){
                 show_f({arr:this.arr_room,is_show_edit:this.is_edit,f:this.edit_f,h:this.edit_height})
               List() {
                 ListItem() {
                   Text("灯光控制")
+                    .fontColor('rgb(70, 100, 180)')
+                    .position({ y: 40, x: 40 });
                 }
-                .width("100%")
-                .height(250)
-                .borderWidth(2)
-                .borderColor(Color.White)
-                .padding(10)
+                .width(150).height(200).borderWidth(2).borderColor(Color.White).padding({ top: 5, bottom: 10, right: 10, left: 10 }).margin({ top: 0, bottom: 15, left: 20, right: 20 })
+                .backgroundImage($r('app.media.c_light2'))
+                .backgroundImageSize(ImageSize.Cover)
+                .shadow({ radius: 5, offsetX: 10, offsetY: 10, color: "#939391" })
+                .borderRadius(10)
                 .onClick(() => {
-                  this.is_show_lights = true
-                })
+                  this.is_show_lights = true;
+                });
 
                 ListItem() {
                   Text("窗帘控制")
+                    .fontColor('rgb(70, 100, 180)')
+                    .position({ y: 40, x: 40 });
                 }
-                .width("100%")
-                .height(250)
-                .borderWidth(2)
-                .borderColor(Color.White)
-                .padding(10)
+                .width(150).height(200).borderWidth(2).borderColor(Color.White).padding({ top: 5, bottom: 10, right: 10, left: 10 }).margin({ top: 0, bottom: 15, left: 10, right: 10 })
+                .backgroundImage($r('app.media.curtain5'))
+                .backgroundImageSize(ImageSize.Cover)
+                .shadow({ radius: 5, offsetX: 10, offsetY: 10, color: "#939391" })
+                .borderRadius(10)
                 .onClick(() => {
                   this.is_show_curtain = true
                 })
 
                 ListItem() {
                   Text("门锁")
+                    .fontColor('rgb(70, 100, 180)')
+                    .position({ y: 40, x: 35 });
                 }
-                .width("100%")
-                .height(250)
-                .borderWidth(2)
-                .borderColor(Color.White)
-                .padding(10)
+                .width(150).height(200).borderWidth(2).borderColor(Color.White).padding(10).margin({ top: 0, bottom: 40, left: 20, right: 20 })
+                .backgroundImage($r('app.media.robot3'))
+                .backgroundImageSize(ImageSize.Cover)
+                .shadow({ radius: 5, offsetX: 10, offsetY: 10, color: "#939391" })
+                .borderRadius(10)
                 .onClick(() => {
                   this.is_show_robot = true
                   console.log("oooooooooo")
@@ -706,12 +679,14 @@ export struct displayRoom {
 
                 ListItem() {
                   Text("空调控制")
+                    .fontColor('rgb(70, 100, 180)')
+                    .position({ y: 40, x: 35 });
                 }
-                .width("100%")
-                .height(250)
-                .borderWidth(2)
-                .borderColor(Color.White)
-                .padding(10)
+                .width(150).height(200).borderWidth(2).borderColor(Color.White).padding(10).margin({ top: 0, bottom: 40, left: 10, right: 10 })
+                .backgroundImage($r('app.media.ufo2'))
+                .backgroundImageSize(ImageSize.Cover)
+                .shadow({ radius: 5, offsetX: 10, offsetY: 10, color: "#939391" })
+                .borderRadius(10)
                 .onClick(() => {
                   this.is_show_air_condition = true
                 })
@@ -721,11 +696,12 @@ export struct displayRoom {
                 control_lights({ arr_room: this.arr_room, is_show: this.is_show_lights })
               }
               if (this.is_show_air_condition) {
-                control_air_condition({ arr_room: this.arr_room, is_show: this.is_show_air_condition })
+                control_aircon({ arr_room: this.arr_room, is_show: this.is_show_air_condition })
               }
               if (this.is_show_curtain) {
-                control_curtain({ arr_room: this.arr_room, is_show: this.is_show_curtain })
+                control_curtain({ arr_room: this.arr_room, is_show: this.is_show_curtain });
               }
+              //门锁
               if(this.is_show_robot){
                 face_cam({is_show:this.is_show_robot})
               }
@@ -742,22 +718,10 @@ export struct displayRoom {
               .width(200)
               .height(10)
             }
-
           })
-
-          /*TabContent() {
-
-          }
-          .tabBar(this.MyBuilder)
-          .width(200)
-          .height(10)*/
-
         }
         .barMode(this.l>3?BarMode.Scrollable:BarMode.Fixed)
         .barWidth("100%")
-
-
-
       if(this.is_show_r){
         add_room_page({ arr: this.arr_room, is_show: this.is_show_r })
       }
@@ -768,50 +732,68 @@ export struct displayRoom {
           _height:this.edit_height
         })
       }
-
     }
-
   }
 }
 
 
 @Component
 struct control_lights{
+
   @Link is_show:boolean
   @Link arr_room:room[]
+
   build() {
     Column(){
-      Button().onClick(()=>{this.is_show = false})
+      Button("返回").onClick(()=>{this.is_show = false})
+        .onClick(() => this.is_show = false)
+        .padding(10)
+        .backgroundColor(Color.White)
+        .borderWidth(2)
+        .borderColor('#ffc4a1ba')
+        .fontColor('#ffc4a1ba')
+        .margin(10);
       if(this.arr_room[0].name != 'null'){
         List(){
-
-          ForEach(this.arr_room,(item:room)=>{
-
+          ForEach(this.arr_room,(item:room,index)=>{
             ListItem(){
               Column(){
                 Text(item.name)
-                mySliber({_room:item})
-
-              }.height(250).padding(20).borderRadius(5)
-              .backgroundColor(Color.Pink)
+                mySliber({
+                  _room:item,
+                })
+              }.width(320).padding(20).borderRadius(15).margin(20)
+              .backgroundColor(
+                index % 3 === 0? '#ffffe1f9' :
+                  index % 3 === 1? '#ffece6fa' :
+                    '#ffe0ebff'
+              )
+              .shadow({
+                radius: 5,
+                offsetX: 20,
+                offsetY: 20,
+                color: "#a8474545"
+              });
             }
           })
-
-        }.lanes(4)
+        }.lanes(1)
       }else{
         Text("还没有房间哦")
       }
 
 
-    }.backgroundColor(Color.White)
-    .width("100%").height("100%")
+    }.backgroundColor( '#e0efff')
+    .width("100%").height("100%");
 
   }
+
 }
 @Component
 struct mySliber{
   @State lighting:number = 0
-  @State _room:room = new room('',[])
+  @Prop _room:room
+  @State bulbColor: string = '#333333'
+
   aboutToAppear(): void {
     let max = 0
     for (let f of this._room.furniture_s){
@@ -823,24 +805,51 @@ struct mySliber{
     console.log("room max:"+this.lighting)
   }
   build() {
-    Slider({
-      direction:Axis.Vertical,
-      reverse:true,
-      max:10,
-      min:0,
-      step:1,
-      style:SliderStyle.OutSet,
-      value:this.lighting
-    })
-      .onChange(async (value)=>{
-        for (let f of this._room.furniture_s) {
-          if (f.type_id > 999 && f.type_id < 2000) {
-            await tcp.sendLED_chang(value, f.type_id)
-            tcp.getData()
-          }
-        }
+    Row(){
+      Image($r('app.media.light'))
+        .height(25)
+        .width(25)
+        .fillColor(this.bulbColor);
+      Slider({
+        direction: Axis.Horizontal,
+        max: 10,
+        min: 0,
+        step: 1,
+        style: SliderStyle.OutSet,
+        value: this.lighting
       })
+        .onChange(async (value) => {
+          this.lighting = value;
+          for (let f of this._room.furniture_s) {
+            if (f.type_id > 999 && f.type_id < 2000) {
+              await tcp.sendLED_chang(value, f.type_id);
+              tcp.getData();
+            }
+          }
+          this.bulbColor = this.calculateBulbColor(this.lighting)
+        })
+        .width(200)
+        .height(20);
+
+      // 添加显示百分比的Text组件
+      Text((this.lighting * 10).toFixed(0) + "%") // 转换为百分比
+        .fontSize(14)
+        .margin({ left: 10 })
+        .fontColor('#666666')
+        .width("15%")
+
+    }
+
+    }
+
+  calculateBulbColor(lighting: number): string {
+    const lightness = lighting / 10;
+    const r = Math.floor(51 + (255 - 51) * lightness);
+    const g = Math.floor(51 + (255 - 51) * lightness);
+    const b = Math.floor(51 + (255 - 51) * lightness);
+    return `rgb(${r},${g},${b})`;
   }
+
 }
 
 
@@ -870,7 +879,7 @@ export struct control_air_condition{
   }
 }
 @Component
-struct air_condition{
+export struct air_condition{
   @Prop item :room
   @State ex_a_c:boolean = false
   @State is_show_add:boolean = false
@@ -970,7 +979,6 @@ struct control_curtain{
     .width("100%").height("100%")
   }
 }
-
 
 @Component
 struct show_f{
@@ -1170,5 +1178,146 @@ export struct my_DeepSeek{
   }
 }
 
+@Component
+export struct control_aircon {
+  @Link is_show: boolean;
+  @Link arr_room: room[];
+  @State selectedMode: 'auto' | 'heat' | 'cool' | 'dry' = 'auto';
+  @State tempSetting: number = 26;
+  @State acColor: string = '#42b983';
+  @State is_chang: boolean = true;
+
+  private calculateAcColor(): string {
+    switch (this.selectedMode) {
+      case 'heat': return '#ff6b6b';
+      case 'cool': return '#4fc0d0';
+      case 'dry': return '#aaa69d';
+      default: return '#42b983';
+    }
+  }
+
+  build() {
+    Column() {
+      Button('返回')
+        .onClick(() => this.is_show = false)
+        .padding(10)
+        .backgroundColor('#e0e0e0')
+        .borderWidth(2)
+        .borderColor('#ffc4a1ba')
+        .fontColor('#ffc4a1ba')
+        .margin(10);
+
+
+      Row() {
+        ForEach(['auto', 'heat', 'cool', 'dry'] as ['auto', 'heat', 'cool', 'dry'], (mode: 'auto' | 'heat' | 'cool' | 'dry') => {
+          Button(mode.toUpperCase())
+            .onClick(() => {
+              this.selectedMode = mode;
+              this.acColor = this.calculateAcColor();
+            })
+            .padding(10)
+            .backgroundColor(this.selectedMode === mode ? '#42b983' : '#e0e0e0')
+            .fontColor('white')
+            .margin(5);
+        });
+      }
+      .margin(20);
+
+      Column() {
+        Text(`当前温度: ${this.tempSetting.toFixed(1)}°C`)
+          .fontSize(24)
+          .margin(20);
+
+        Row() {
+          Button('-')
+            .onClick(() => {
+              if (this.tempSetting > 16) {
+                this.tempSetting -= 0.5;
+                this.is_chang = !this.is_chang;
+              }
+            })
+            .padding(10)
+            .backgroundColor('#e0e0e0')
+            .margin(5);
+
+          this.CustomCircularProgress(); // 直接调用，无需传参
+
+          Button('+')
+            .onClick(() => {
+              if (this.tempSetting < 30) {
+                this.tempSetting += 0.5;
+                this.is_chang = !this.is_chang;
+              }
+            })
+            .padding(10)
+            .backgroundColor('#e0e0e0')
+            .margin(5);
+        }
+        .margin(20);
+      }
+      .backgroundColor('#f8f8f8')
+      .borderRadius(15)
+      .padding(20);
+
+      List() {
+        ForEach(this.arr_room, (item: room) => {
+          ListItem() {
+            Column() {
+              Text(item.name)
+                .fontSize(18)
+                .margin(10);
+
+              Row() {
+                Image($r(`app.media.ac_${this.selectedMode}`))
+                  .height(40)
+                  .width(40)
+                  .fillColor(this.calculateAcColor());
+
+                Text(`${this.tempSetting.toFixed(1)}°C`)
+                  .fontSize(20)
+                  .margin(10);
+              }
+            }
+            .width('90%')
+            .padding(15)
+            .backgroundColor('#ffffff')
+            .borderRadius(10)
+            .shadow({ radius: 3, offsetX: 2, offsetY: 2, color: '#999999' });
+          }
+        });
+      }
+      .margin(20);
+    }
+    .backgroundColor('#e0efff')
+    .width('100%')
+    .height('100%');
+  }
+
+  @Builder
+  CustomCircularProgress() {
+    // 直接使用组件内的 @State tempSetting
+
+
+    Progress({
+      value:this.tempSetting - 16,
+      total: 14,
+      style: ProgressStyle.Ring
+    })
+      .style({
+        strokeWidth: 10,
+        ringStyle: {
+          startAngle: -90,
+          sweepAngle: 360,
+          gapRadius: 0
+        }
+      } as RingStyleOptions)
+      .color(`rgb(255, ${255 -  Math.min(255, Math.max(0, (this.tempSetting - 16) * 18))}, ${255 -  Math.min(255, Math.max(0, (this.tempSetting - 16) * 18))})`)
+      .size({ width: 120, height: 120 })
+  }
+}
+// 类型声明
+declare interface SliderStyle {
+  readonly OutSet: SliderStyle;
+}
 
 

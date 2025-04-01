@@ -1,5 +1,5 @@
 import { Furniture, room } from "../tool/classes"
-import { control_air_condition } from "../tool/component"
+import { control_aircon, control_air_condition } from "../tool/component"
 import { _IoTad } from "./scan_devices"
 
 @Entry
@@ -215,7 +215,7 @@ struct leaving_scene{
 
       }.width("100%").height(this._height).backgroundColor(Color.White)
       if(this.is_show_air_condition){
-        control_air_condition({is_show:this.is_show_air_condition,arr_room:this.arr_room})
+        control_aircon({is_show:this.is_show_air_condition,arr_room:this.arr_room})
       }
 
     }

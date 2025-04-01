@@ -20,6 +20,10 @@ struct NewPage {
   async aboutToAppear() {
     const context = getContext(this) as common.UIAbilityContext;
     this.userPreferences = await preferences.getPreferences(context, 'userData');
+    const is_land =  await this.userPreferences.get("is_land",false)
+    if(is_land){
+      router.replaceUrl({ url: "pages/scan_devices" });
+    }
   }
 
   build() {
@@ -82,7 +86,8 @@ struct NewPage {
                 this.showCustomToast('登录成功', 'success');
                 setTimeout(() => {
                   router.replaceUrl({ url: "pages/Index" });
-                }, 1000);
+                }, 200);
+
               }
             } finally {
               this.is_landing = false;
@@ -170,6 +175,7 @@ struct NewPage {
       }
 
       await this.userPreferences.put('last_login', this.input_userName);
+      await this.userPreferences.put("is_land",true)
       await this.userPreferences.flush();
       return true;
     } catch (error) {

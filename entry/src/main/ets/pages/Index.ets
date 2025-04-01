@@ -233,12 +233,13 @@ struct homepage{
         Stack(){
           Row(){
             Column(){
-              Text("温度："+this.temp)
-                .fontSize(25)
-                .fontColor(Color.White)
-              Text("湿度："+this.humi)
-                .fontSize(25)
-                .fontColor(Color.White)
+              Text("温度：" + this.temp)
+                .fontSize(20)
+                .fontColor(this.is_sleep ?'transparent'  : '#6d9cee')
+                .margin({ bottom: 5 });
+              Text("湿度：" + this.humi)
+                .fontSize(18)
+                .fontColor(this.is_sleep ?'transparent'  : '#6d9cee');
             }.width("50%").height('100')
             .onClick(()=>{
               //this.is_show_humidity = !this.is_show_humidity
@@ -248,52 +249,60 @@ struct homepage{
             })
             Column(){
               Row(){
-                Button(this.is_Lock?'开锁':'关锁')
-                  .onClick(()=>{this.is_Lock = !this.is_Lock
-                  animateTo({duration:500},async ()=>{
-                    if(this.is_Lock){
-                      this._height = "100%"
-                      this.backG = "app.media.back_house1"
-                      this._width = "100%"
-                    }else {
-                      this._height = "20%"
-                      this.backG = "app.media.back_house"
-                      this._width = "90%"
-                    }
-                    //this.udp_send()
-                  })})
-                Button('...')
-                  .bindMenu(this.MenuBar)
-                  .onClick(()=>{
-                    //console.log("NAPI:"+testNapi.max(2,70))
-                  })
+                Button(this.is_Lock ? '开锁' : '关锁')
+                  .backgroundColor(this.is_sleep ? 'transparent'  : '#e0efff')
+                  .fontColor(this.is_sleep ? 'transparent'  : '#6d9cee')
+                  .padding({ left: 15, right: 15 })
+                  .onClick(() => {
+                    this.is_Lock = !this.is_Lock;
+                    animateTo({ duration: 500 }, async () => {
+                      if (this.is_Lock) {
+                        this._height = "100%";
+                        this.backG = "app.media.back_house1";
+                        this._width = "100%";
+                      } else {
+                        this._height = "20%";
+                        this.backG = "app.media.back_house";
+                        this._width = "90%";
+                      }
+                    });
+                  });
+                Button('+')
+                  .backgroundColor(this.is_sleep?'transparent'   : '#e0efff')
+                  .fontColor(this.is_sleep ? 'transparent'  : '#6d9cee')
+                  .padding({ left: 15, right: 15 })
+                  .bindMenu(this.MenuBar);
               }
-              Button(this.is_sleep?"退出睡觉模式":"进入睡觉模式")
-                .onClick(async ()=>{
-                  //await this.udp_send()
-                  console.log("room sleep :"+JSON.stringify(this.arr_room))
-                  let new_a_room:room[]=[]
-                  this.is_sleep = !this.is_sleep
-                  for(let r of this.arr_room){
-                    if(this.is_sleep){
-                      r.go_bed()
+              Button(this.is_sleep ? "退出睡觉模式" : "进入睡觉模式")
+                .backgroundColor( '#e0efff')
+                .fontColor(this.is_sleep?'rgb(70, 100, 180)': '#6d9cee')
+                .padding({ left: 15, right: 15 })
+                .onClick(() => {
+                  this.is_sleep = !this.is_sleep;
+                  animateTo({ duration: 500 }, async () => {
+                    if (this.is_sleep) {
+                      this._height = "100%";
+                      this.backG = "app.media.sleep";
+                      this._width = "100%";
+                    } else {
+                      this._height = "20%";
+                      this.backG = "app.media.back_house";
+                      this._width = "90%";
                     }
-                    new_a_room.push(r)
-                  }
-                  this.arr_room = new_a_room
-                  console.log("room sleep :"+JSON.stringify(this.arr_room))
-
-                })
+                  });
+                });
             }
-
-
           }.height(this._height).width(this._width)
-          //.backgroundColor('#0080f5')
           .backgroundImage($r(this.backG))
           .backgroundImageSize(ImageSize.Cover)
-          .padding(5)
+          .padding(10)
           .borderRadius(15)
-
+          .shadow({
+            color: '#0000005d',
+            radius: 10,
+            offsetX: 10,
+            offsetY: 10
+          });
           if(this.is_show_r){
             Column().width("100%").height('20%').backgroundColor("#9c000000")
           }
@@ -309,8 +318,6 @@ struct homepage{
       }
       .height("90%")
       .width('100%')
-
-
     }.height("100%").width("100%")
   }
 }
@@ -336,6 +343,13 @@ struct detail_data{
         }.width('100%')
         .height('50%')
         .backgroundColor(Color.White)
+        .margin({ bottom: 10 })
+        .shadow({
+          color: '#0000001A',
+          radius: 10,
+          offsetX: 2,
+          offsetY: 2
+        });
         Row().width('100%').height("25%").onClick(()=>{this.is_show = false})
     }.height(this._h).width(this._w)
   }
@@ -343,59 +357,95 @@ struct detail_data{
 
 @Component
 struct userpage{
-  localstorage :LocalStoraga = new LocalStoraga("User_data")
-  @State username:string = ''
-  @State is_show_all_f:boolean = false
-  @State f_arr:Furniture[] = []
-  @State _height:string = "0%"
-  localstorage1 :LocalStoraga = new LocalStoraga("AI")
+  localstorage: LocalStoraga = new LocalStoraga("User_data");
+  @State username: string = '';
+  @State is_show_all_f: boolean = false;
+  @State f_arr: Furniture[] = [];
+  @State _height: string = "0%";
+
   aboutToAppear() {
-
-    console.log("user",'into')
-    this.localstorage.getDate("username").then(_User_=>{
-      console.log("user",_User_)
-      this.username = _User_ as string
-    })
+    console.log("user", 'into');
+    this.localstorage.getDate("username").then(_User_ => {
+      console.log("user", _User_);
+      this.username = _User_ as string;
+    });
   }
-  build() {
 
-    Stack(){
-      Column(){
+  build() {
+    Stack() {
+      Image($r('app.media.bottom_bg1'))
+        .objectFit(ImageFit.Cover)
+      Column() {
         Text("用户界面")
+          .fontSize(30)
+          .fontWeight(FontWeight.Bold)
+          .margin({ top: 50 })
+          .fontColor('#254e7a');
+
         Text(this.username)
+          .fontSize(20)
+          .margin({ top: 20 })
+          .fontColor('#254e7a');
+
         Button("退出登录")
-          .onClick(()=>{
-            this.localstorage1.setDate("history",'')
-            this.localstorage.setDate('is_landing',false)
+          .width("90%")
+          .height(50)
+          .backgroundImage($r('app.media.btn_bg'))
+          .backgroundImageSize(ImageSize.Cover)
+          .fontColor(Color.White)
+          .borderRadius(10)
+          .onClick(() => {
+            this.localstorage.setDate('is_landing', false);
             router.replaceUrl({
-              url:'pages/Open'
-            })
-          })
+              url: 'pages/Open'
+            });
+          });
+
         Button("我的家居")
-          .onClick(async ()=>{this.is_show_all_f = true
-            this.f_arr = await Room_db.getAllFurinture()
-          animateTo({duration:500},()=>{
-            this._height = "50%"
-          })})
-      }.height("100%").width("100%")
-      if(this.is_show_all_f){
-        Column(){
-          List(){
+          .width("90%")
+          .height(50)
+          .backgroundImage($r('app.media.btn_bg'))
+          .backgroundImageSize(ImageSize.Cover)
+          .fontColor(Color.White)
+          .borderRadius(10)
+          .onClick(async () => {
+            this.is_show_all_f = true;
+            this.f_arr = await Room_db.getAllFurinture();
+            animateTo({ duration: 500 }, () => {
+              this._height = "50%";
+            });
+          });
+      }
+      .width('100%')
+      .height('100%')
+      .alignItems(HorizontalAlign.Center);
+
+      if (this.is_show_all_f) {
+        Column() {
+          List() {
             ForEach(this.f_arr, (item: Furniture, index) => {
-              ListItem(){
-                Row(){
+              ListItem() {
+                Row() {
                   Text(item.name)
+                    .fontSize(16)
                   Text(item.type_id.toString())
-                }.width('100%').height(50).justifyContent(FlexAlign.SpaceAround)
+                    .fontSize(16)
+                }
+                .width('100%')
+                .height(50)
+                .justifyContent(FlexAlign.SpaceAround);
               }
-            })
+            });
           }
-        }.width('90%').height(this._height)
-        .onClick(()=>{this.is_show_all_f = false
-        this._height = '0%'})
+        }
+        .width('90%')
+        .height(this._height)
+        .onClick(() => {
+          this.is_show_all_f = false;
+          this._height = '0%';
+        });
       }
     }
-
   }
 }
 //////////////////////////////*********************///////////////////////////////////////
@@ -419,46 +469,49 @@ struct Index {
       Image($r("app.media.user"))
         .height(num==this.selectnumber?20:10)
         .width(num==this.selectnumber?20:10)
-        .fillColor(num==this.selectnumber?'#ff41a5fc':Color.White)
+        .fillColor(num==this.selectnumber?'#4A90E2':Color.White)
 
       Text(title)
-        .fontColor(num==this.selectnumber?'#ff41a5fc':Color.White)
+        .fontColor(num==this.selectnumber?'#4A90E2':Color.White)
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(num==this.selectnumber?'#d7e7ff':'#ff41a5fc')
+    .backgroundImage(num == this.selectnumber ? $r('app.media.bottom_bg1') : $r('app.media.bottom_bg2'))
+    .backgroundImageSize(ImageSize.Cover)
   }
   @Builder
-  MyBuilder_add (title:string,num:number){
-    Column(){
-      Row().width("100%").height(15)
+  MyBuilder_add(title: string, num: number) {
+    Column() {
+      Row().width("100%").height(15);
       Image($r("app.media.add"))
-        .height(num==this.selectnumber?20:10)
-        .width(num==this.selectnumber?20:10)
-        .fillColor(num==this.selectnumber?'#ff41a5fc':Color.White)
+        .height(num == this.selectnumber ? 20 : 10)
+        .width(num == this.selectnumber ? 20 : 10)
+        .fillColor(num == this.selectnumber ? '#4A90E2' : Color.White);
 
       Text(title)
-        .fontColor(num==this.selectnumber?'#ff41a5fc':Color.White)
+        .fontColor(num == this.selectnumber ? '#4A90E2' : Color.White);
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(num==this.selectnumber?'#d7e7ff' : '#ff41a5fc')
+    .backgroundImage(num == this.selectnumber ? $r('app.media.bottom_bg1') : $r('app.media.bottom_bg2'))
+    .backgroundImageSize(ImageSize.Cover)
   }
   @Builder
-  MyBuilder_home (title:string,num:number){
-    Column(){
-      Row().width("100%").height(15)
+  MyBuilder_home(title: string, num: number) {
+    Column() {
+      Row().width("100%").height(15);
       Image($r("app.media.home"))
-        .height(num==this.selectnumber?20:10)
-        .width(num==this.selectnumber?20:10)
-        .fillColor(num==this.selectnumber?'#ff41a5fc':Color.White)
+        .height(num == this.selectnumber ? 20 : 10)
+        .width(num == this.selectnumber ? 20 : 10)
+        .fillColor(num == this.selectnumber ? '#4A90E2' : Color.White);
 
       Text(title)
-        .fontColor(num==this.selectnumber?'#ff41a5fc':Color.White)
+        .fontColor(num == this.selectnumber ? '#4A90E2' : Color.White);
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(num==this.selectnumber?'#d7e7ff':'#ff41a5fc')
+    .backgroundImage(num == this.selectnumber ? $r('app.media.bottom_bg1') : $r('app.media.bottom_bg2'))
+    .backgroundImageSize(ImageSize.Cover)
   }
 
   build() {
@@ -475,7 +528,7 @@ struct Index {
           TabContent(){
             scene({arr_room:this.arr_room})
           }
-          .tabBar(this.MyBuilder_add("更多",1))
+          .tabBar(this.MyBuilder_add("场景",1))
 
           //用户页面
           TabContent(){
@@ -491,7 +544,7 @@ struct Index {
       }
       .height('100%')
       .width('100%')
-      .backgroundColor("#d7e7ff")
+      .backgroundColor("#E6F2FF");
 
 
       Button("AI")
@@ -545,56 +598,56 @@ export struct WarnPage {
   }
   build() {
     Stack() {
-      if(this.warn_data.type == 'temp'){
-        Column(){
+      Image($r('app.media.bottom_bg1'))
+        .objectFit(ImageFit.Cover)
+      if (this.warn_data.type == 'temp') {
+        Column() {
           Text(this.warn_data.data.toString())
             .fontColor(Color.Red)
-            .fontSize(100)
+            .fontSize(100);
           Text("***温度过高***")
+            .fontSize(18);
           Text("解决方案：目前温度已超过安全标准，请立即行动起来！！")
-          Button(this.have_air_condition?"开空调":"开窗")
-            .onClick(()=>{
-              if(this.have_air_condition){
-                //传输开空调指令
-                tcp.send_on(this.a_id)
+            .fontSize(16);
+          Button(this.have_air_condition ? "开空调" : "开窗")
+            .backgroundColor('#4A90E2')
+            .fontColor(Color.White)
+            .borderRadius(10)
+            .padding({ left: 15, right: 15 })
+            .onClick(() => {
+              if (this.have_air_condition) {
+                tcp.send_on(this.a_id);
               }
-              this.is_warn = false
-            })
+              this.is_warn = false;
+            });
         }
       }
-      if(this.warn_data.type == 'humi'){
-        Column(){
+      if (this.warn_data.type == 'humi') {
+        Column() {
           Text(this.warn_data.data.toString())
             .fontColor(Color.Red)
-            .fontSize(100)
+            .fontSize(100);
           Text("***湿度过高***")
-          Text("解决方案：目前温度已超过安全标准，请立即行动起来！！")
-          Button(this.have_air_condition?"开空调，并开始除湿":"开窗")
-            .onClick(async ()=>{
-              if(this.have_air_condition){
-                //传输开空调指令
-                await tcp.send_on(this.a_id)
+            .fontSize(18);
+          Text("解决方案：目前湿度已超过安全标准，请立即行动起来！！")
+            .fontSize(16);
+          Button(this.have_air_condition ? "开空调，并开始除湿" : "开窗")
+            .backgroundColor('#4A90E2')
+            .fontColor(Color.White)
+            .borderRadius(10)
+            .padding({ left: 15, right: 15 })
+            .onClick(async () => {
+              if (this.have_air_condition) {
+                await tcp.send_on(this.a_id);
               }
-              tcp.getData()
-              this.is_warn = false
-            })
+              tcp.getData();
+              this.is_warn = false;
+            });
         }
       }
-
-      /* Text(this.title)
-         .fontSize(30)
-         .fontColor(Color.Red)
-       Text(this.warn_data.type)
-         .id('WarnPageHelloWorld')
-         .fontSize($r('app.float.page_text_font_size'))
-         .fontWeight(FontWeight.Bold)
-       Button(this.have_air_condition?"开空调":"解决方案")
-         .onClick(()=>{
-           this.is_warn = false
-         })*/
     }
     .height('100%')
     .width('100%')
-    .backgroundColor(Color.White)
+    .backgroundColor("#E6F2FF");
   }
 }
