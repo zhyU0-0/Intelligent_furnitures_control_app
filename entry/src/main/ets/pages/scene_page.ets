@@ -2,7 +2,7 @@ import { Furniture, room } from "../tool/classes"
 import { control_aircon, control_air_condition } from "../tool/component"
 import { _IoTad } from "./scan_devices"
 
-@Entry
+
 @Component
 export struct scene{
 
@@ -12,7 +12,6 @@ export struct scene{
   @State is_show_leaving:boolean = false
   @State this_scene:string = ''
   @State _height:string = "0%"
-
 
   build() {
     Stack(){

@@ -16,10 +16,6 @@ let Room_db:RoomDatabase = new RoomDatabase(globalThis.getContext())
 let new_f_R_Id:number
 
 
-
-
-
-
 @Component
 export struct furniture_long {
 
@@ -106,22 +102,20 @@ export struct furniture_long {
               this.Light_number = value
               console.log("LL:"+this.Light_number.toString())
               this.is_chang = !this.is_chang
-              tcp.sendLED_chang(value,this.arr_f[this.index_f].type_id)
+              _IoTad.set_LED_brightness_by_id(value*100)
               this.o_f = this.arr_f[this.index_f]
+
               //udp.sendLED_chang(value)
             })
         }
       }
       if(this.o_f.type_id >2999 && this.o_f.type_id<4000){
-        Text("目前温度："+this.o_f.temp.toString())
-          .position({ y:250, x:20 })
-        Row() {
-          Button("除湿")
-        }
-        .width(80).height(40).borderRadius(5)
-        .position({y:350,x:20})
-        .backgroundColor(this.arr_f[this.index_f].is_dry?Color.Blue:Color.White)
 
+          Column(){
+            my_airCon_edit({ is_show: this.is_show_f,item:this.o_f })
+          }
+          .height("55%")
+          .width('100%')
       }
     }
 
@@ -206,23 +200,28 @@ struct furniture_edit{
               //udp.sendLED_chang(value)
             })
         }
-
-
-
       }
       if(this.o_f.type_id >2999 && this.o_f.type_id<4000){
-        Text("目前温度："+this.o_f.temp.toString())
-          .position({ y:250, x:20 })
-        Row() {
-          Button("处湿")
-        }
-        .width(80).height(40).borderRadius(5)
-        .position({y:350,x:20})
-        .backgroundColor(this.furniturn.is_dry?Color.Blue:Color.White)
+        Column(){
+          Row(){
+            Text(this.o_f.name)
+              .position({
+                y:50,
+                x:20
+              })
+            Text("id:"+this.o_f.type_id.toString())
+              .position({
+                y:50,
+                x:200
+              })
+
+          }
+          my_airCon_edit({is_show:this.is_show_f,item:this.furniturn})
+        }.width("100%").height('100%')
+        .backgroundColor('#e0efff')
 
       }
     }
-
     .height(this._height)
     .width('100%')
     .backgroundColor('#9c000000')
@@ -264,7 +263,6 @@ export struct add_furniture_page {
           .onClick(async () => {
             if (this.fur_name != ''&&this.type != 0) {
               //数据库
-              console.log('roomwwwwww')
               console.log('roomwwwwww'+new_f_R_Id)
               let success = await Room_db.insertFuByRoomId(new_f_R_Id,this.fur_name,this.type)
               console.log('roomwwwwww  success'+success)
@@ -425,7 +423,6 @@ export struct myList {
                       this.index_f = index
                       animateTo({duration:200},()=>{
                         this._height = "100%"
-
                       })
                       console.log('Long_touch')
                     }
@@ -436,23 +433,36 @@ export struct myList {
             )
             .onClick(()=>{
               if(item.type_id<2000){
-                if(item.switch){
-                  this.arr_fnt[index] = new Furniture(item.name,0,item.type_id)
-                  this.arr_fnt[index].lighting = 0
-                  tcp.send_off(this.arr_fnt[index].type_id)
+                if(item.type_id>1100){
                 }else{
-                  this.arr_fnt[index] = new Furniture(item.name,1,item.type_id)
-                  this.arr_fnt[index].lighting = 5
-                  tcp.send_on(this.arr_fnt[index].type_id)
-                  console.log("ROom F IS :"+JSON.stringify(this.arr_fnt))
+                  if(item.switch){
+                    this.arr_fnt[index] = new Furniture(item.name,0,item.type_id)
+                    this.arr_fnt[index].lighting = 0
+                    _IoTad.set_LED_brightness_by_id(1)
+                  }else{
+                    this.arr_fnt[index] = new Furniture(item.name,1,item.type_id)
+                    this.arr_fnt[index].lighting = 5
+                    _IoTad.set_LED_brightness_by_id(5000)
+                    console.log("ROom F IS :"+JSON.stringify(this.arr_fnt))
+                  }
                 }
-              }else{
+              }else if(item.type_id>=3000&&item.type_id<4000){
                 if(item.switch){
                   this.arr_fnt[index] = new Furniture(item.name,0,item.type_id)
-                  tcp.send_off(this.arr_fnt[index].type_id)
+                  set_furniture(item,"off")
                 }else{
                   this.arr_fnt[index] = new Furniture(item.name,1,item.type_id)
-                  tcp.send_on(this.arr_fnt[index].type_id)
+                  set_furniture(item,"on")
+                }
+              }
+              else{
+
+                if(item.switch){
+                  this.arr_fnt[index] = new Furniture(item.name,0,item.type_id)
+                  set_furniture(item,"off")
+                }else{
+                  this.arr_fnt[index] = new Furniture(item.name,1,item.type_id)
+                  set_furniture(item,"on")
                 }
               }
 
@@ -542,19 +552,6 @@ export struct myRow {
         .borderRadius(20)
         .borderWidth(2)
         .borderColor(this.item1.switch? 'rgb(70, 100, 180)' : "#009caeca");
-        /*.onClick(() => {
-          this.is_clicknum += 1
-          console.log("item", this.item1.switch)
-          if (this.item1.switch) {
-            this.item1.close()
-            //udp.sendLEDon(this.item1.type_id)
-            //tcp.sendLEDon(this.item1.type_id)
-          } else {
-            this.item1.open()
-            //udp.sendLEDoff(this.item1.type_id)
-            //tcp.sendLEDon(this.item1.type_id)
-          }
-        })*/
       }
 
 
@@ -827,6 +824,8 @@ struct mySliber{
             }
           }
           this.bulbColor = this.calculateBulbColor(this.lighting)
+          _IoTad.set_LED_brightness_by_id(value*100)
+
         })
         .width(200)
         .height(20);
@@ -1007,7 +1006,6 @@ struct show_f{
         }
       }
     },1000)
-
   }
 
   build() {
@@ -1179,125 +1177,104 @@ export struct my_DeepSeek{
 }
 
 @Component
-export struct control_aircon {
-  @Link is_show: boolean;
-  @Link arr_room: room[];
+export struct my_airCon_edit{
+
+  @Link item:Furniture
+  @Link is_show:boolean
   @State selectedMode: 'auto' | 'heat' | 'cool' | 'dry' = 'auto';
   @State tempSetting: number = 26;
   @State acColor: string = '#42b983';
   @State is_chang: boolean = true;
-
+  @State Color_B:string[] = ['#42b983','#ff6b6b','#4fc0d0','#ffaea68e']
   private calculateAcColor(): string {
     switch (this.selectedMode) {
       case 'heat': return '#ff6b6b';
       case 'cool': return '#4fc0d0';
-      case 'dry': return '#aaa69d';
+      case 'dry': return '#ffaea68e';
       default: return '#42b983';
     }
   }
-
-  build() {
-    Column() {
-      Button('返回')
-        .onClick(() => this.is_show = false)
-        .padding(10)
-        .backgroundColor('#e0e0e0')
-        .borderWidth(2)
-        .borderColor('#ffc4a1ba')
-        .fontColor('#ffc4a1ba')
-        .margin(10);
-
-
-      Row() {
-        ForEach(['auto', 'heat', 'cool', 'dry'] as ['auto', 'heat', 'cool', 'dry'], (mode: 'auto' | 'heat' | 'cool' | 'dry') => {
-          Button(mode.toUpperCase())
-            .onClick(() => {
-              this.selectedMode = mode;
-              this.acColor = this.calculateAcColor();
-            })
-            .padding(10)
-            .backgroundColor(this.selectedMode === mode ? '#42b983' : '#e0e0e0')
-            .fontColor('white')
-            .margin(5);
-        });
-      }
-      .margin(20);
-
-      Column() {
-        Text(`当前温度: ${this.tempSetting.toFixed(1)}°C`)
-          .fontSize(24)
-          .margin(20);
-
-        Row() {
-          Button('-')
-            .onClick(() => {
-              if (this.tempSetting > 16) {
-                this.tempSetting -= 0.5;
-                this.is_chang = !this.is_chang;
-              }
-            })
-            .padding(10)
-            .backgroundColor('#e0e0e0')
-            .margin(5);
-
-          this.CustomCircularProgress(); // 直接调用，无需传参
-
-          Button('+')
-            .onClick(() => {
-              if (this.tempSetting < 30) {
-                this.tempSetting += 0.5;
-                this.is_chang = !this.is_chang;
-              }
-            })
-            .padding(10)
-            .backgroundColor('#e0e0e0')
-            .margin(5);
-        }
-        .margin(20);
-      }
-      .backgroundColor('#f8f8f8')
-      .borderRadius(15)
-      .padding(20);
-
-      List() {
-        ForEach(this.arr_room, (item: room) => {
-          ListItem() {
-            Column() {
-              Text(item.name)
-                .fontSize(18)
-                .margin(10);
-
-              Row() {
-                Image($r(`app.media.ac_${this.selectedMode}`))
-                  .height(40)
-                  .width(40)
-                  .fillColor(this.calculateAcColor());
-
-                Text(`${this.tempSetting.toFixed(1)}°C`)
-                  .fontSize(20)
-                  .margin(10);
-              }
-            }
-            .width('90%')
-            .padding(15)
-            .backgroundColor('#ffffff')
-            .borderRadius(10)
-            .shadow({ radius: 3, offsetX: 2, offsetY: 2, color: '#999999' });
-          }
-        });
-      }
-      .margin(20);
-    }
-    .backgroundColor('#e0efff')
-    .width('100%')
-    .height('100%');
+  aboutToAppear(): void {
+    this.tempSetting = this.item.temp
   }
 
+  build() {
+      Column() {
+        Button('返回')
+          .onClick(() => this.is_show = false)
+          .padding(10)
+          .backgroundColor(Color.White)
+          .borderWidth(2)
+          .borderColor('#6d9cee')
+          .fontColor('#6d9cee')
+          .margin(5);
+
+
+        Row() {
+          ForEach(['auto', 'heat', 'cool', 'dry'] as ['auto', 'heat', 'cool', 'dry'], (mode: 'auto' | 'heat' | 'cool' | 'dry',value) => {
+            Button(mode.toUpperCase())
+              .onClick(() => {
+                this.selectedMode = mode;
+                this.acColor = this.calculateAcColor();
+              })
+              .padding(10)
+              .backgroundColor(this.selectedMode === mode ? this.Color_B[value] : '#e0e0e0')
+              .fontColor(this.selectedMode === mode ? '#e0e0e0':'#6d9cee')
+              .borderWidth(2)
+              .borderColor(this.selectedMode === mode ?'#e0e0e0':'#6d9cee')
+              .margin(5);
+          });
+        }
+        .margin(10);
+
+        Column() {
+          Text(`当前温度: ${this.tempSetting.toFixed(1)}°C`)
+            .fontSize(24)
+            .margin(10);
+
+          Row() {
+            Button('-')
+              .onClick(() => {
+                if (this.tempSetting > 16) {
+                  this.tempSetting -= 0.5;
+                  this.is_chang = !this.is_chang;
+                }
+              })
+              .padding(10)
+              .backgroundColor('#e0e0e0')
+              .margin(5);
+
+            this.CustomCircularProgress(); // 直接调用，无需传参
+
+            Button('+')
+              .onClick(() => {
+                if (this.tempSetting < 30) {
+                  this.tempSetting += 0.5;
+                  this.is_chang = !this.is_chang;
+                }
+              })
+              .padding(10)
+              .backgroundColor('#e0e0e0')
+              .margin(5);
+          }
+          .margin(10);
+        }
+        .height("50%")
+        .width("80%")
+        .backgroundColor('#f8f8f8')
+        .borderRadius(15)
+        .padding(20);
+
+      }
+      .backgroundColor('#e0efff')
+      .borderRadius(20)
+      .width('100%')
+      .height('100%');
+
+    }
   @Builder
   CustomCircularProgress() {
     // 直接使用组件内的 @State tempSetting
-
-
     Progress({
       value:this.tempSetting - 16,
       total: 14,
@@ -1312,7 +1289,171 @@ export struct control_aircon {
         }
       } as RingStyleOptions)
       .color(`rgb(255, ${255 -  Math.min(255, Math.max(0, (this.tempSetting - 16) * 18))}, ${255 -  Math.min(255, Math.max(0, (this.tempSetting - 16) * 18))})`)
-      .size({ width: 120, height: 120 })
+      .size({ width: 80, height: 80 })
+  }
+
+
+
+}
+@Component
+export struct control_aircon {
+  @Link is_show: boolean;
+  @Link arr_room: room[];
+  @State selectedMode: 'auto' | 'heat' | 'cool' | 'dry' = 'auto';
+  @State Color_B:string[] = ['#42b983','#ff6b6b','#4fc0d0','#ffaea68e',]
+  @State tempSetting: number = 26;
+  @State acColor: string = '#42b983';
+  @State is_chang: boolean = true;
+  @State is_exist:boolean = false
+  private calculateAcColor(): string {
+    switch (this.selectedMode) {
+      case 'heat': return '#ff6b6b';
+      case 'cool': return '#4fc0d0';
+      case 'dry': return '#ffaea68e';
+      default: return '#42b983';
+    }
+  }
+  aboutToAppear(): void {
+    for (let r of this.arr_room){
+      for(let f of r.furniture_s){
+        if(f.type_id>=3000&&f.type_id<4000){
+          this.is_exist = true
+          this.tempSetting = f.temp
+        }
+      }
+    }
+  }
+
+  build() {
+    if(this.is_exist){
+      Column() {
+        Button('返回')
+          .onClick(() => this.is_show = false)
+          .padding(10)
+          .backgroundColor(Color.White)
+          .borderWidth(2)
+          .borderColor('#6d9cee')
+          .fontColor('#6d9cee')
+          .margin(5);
+
+
+        Row() {
+          ForEach(['auto', 'heat', 'cool', 'dry'] as ['auto', 'heat', 'cool', 'dry'], (mode: 'auto' | 'heat' | 'cool' | 'dry',value) => {
+            Button(mode.toUpperCase())
+              .onClick(() => {
+                this.selectedMode = mode;
+                this.acColor = this.calculateAcColor();
+              })
+              .padding(10)
+              .backgroundColor(this.selectedMode === mode ? this.Color_B[value] : '#e0e0e0')
+              .fontColor(this.selectedMode === mode ? '#e0e0e0':'#6d9cee')
+              .borderWidth(2)
+              .borderColor(this.selectedMode === mode ?'#e0e0e0':'#6d9cee')
+              .margin(5);
+          });
+        }
+        .margin(10);
+
+        Column() {
+          Text(`当前温度: ${this.tempSetting.toFixed(1)}°C`)
+            .fontSize(24)
+            .margin(10);
+
+          Row() {
+            Button('-')
+              .onClick(() => {
+                if (this.tempSetting > 16) {
+                  this.tempSetting -= 0.5;
+                  this.is_chang = !this.is_chang;
+                }
+              })
+              .padding(10)
+              .backgroundColor('#e0e0e0')
+              .margin(5);
+
+            this.CustomCircularProgress(); // 直接调用，无需传参
+
+            Button('+')
+              .onClick(() => {
+                if (this.tempSetting < 30) {
+                  this.tempSetting += 0.5;
+                  this.is_chang = !this.is_chang;
+                }
+              })
+              .padding(10)
+              .backgroundColor('#e0e0e0')
+              .margin(5);
+          }
+          .margin(10);
+        }
+        .height("30%")
+        .width("80%")
+        .backgroundColor('#f8f8f8')
+        .borderRadius(15)
+        .padding(20);
+
+        List() {
+          ForEach(this.arr_room, (item: room) => {
+            ListItem() {
+              Row() {
+                Text(item.name)
+                  .fontSize(18)
+                  .margin(10)
+                  .width("30%");
+
+                Row() {
+                  Image($r(`app.media.ac_${this.selectedMode}`))
+                    .height(40)
+                    .width(40)
+                    .fillColor(this.calculateAcColor());
+
+                  Text(`${this.tempSetting.toFixed(1)}°C`)
+                    .fontSize(20)
+                    .margin(10);
+                }
+              }
+              .padding(20)
+              .backgroundColor('#ffffff')
+              .borderRadius(10)
+              .shadow({ radius: 3, offsetX: 2, offsetY: 2, color: '#999999' })
+              .height("15%")
+              .width("100%");
+            }
+            ListItem().height(10)
+          });
+        }
+        .margin(20);
+      }
+      .backgroundColor('#e0efff')
+      .width('100%')
+      .height('100%');
+    }else {
+      Column(){
+        Text("还没有空调呢")
+        Button("前往录入")
+      }
+    }
+    }
+
+
+  @Builder
+  CustomCircularProgress() {
+    // 直接使用组件内的 @State tempSetting
+    Progress({
+      value:this.tempSetting - 16,
+      total: 14,
+      style: ProgressStyle.Ring
+    })
+      .style({
+        strokeWidth: 10,
+        ringStyle: {
+          startAngle: -90,
+          sweepAngle: 360,
+          gapRadius: 0
+        }
+      } as RingStyleOptions)
+      .color(`rgb(255, ${255 -  Math.min(255, Math.max(0, (this.tempSetting - 16) * 18))}, ${255 -  Math.min(255, Math.max(0, (this.tempSetting - 16) * 18))})`)
+      .size({ width: 80, height: 80 })
   }
 }
 // 类型声明
@@ -1320,4 +1461,22 @@ declare interface SliderStyle {
   readonly OutSet: SliderStyle;
 }
 
+function set_furniture(item:Furniture,command_on_off_number:string){
 
+  if(item.type_id<999){
+
+  }else if(item.type_id<2000){
+
+  }else if(item.type_id<3000){
+    _IoTad.set_curtain_by_id(command_on_off_number)
+  }else if(item.type_id<4000){
+    _IoTad.set_air_condition_by_id(Number(command_on_off_number))
+  }else if(item.type_id<5000){
+
+  }else if(item.type_id<6000){
+
+  }else if(item.type_id<7000){
+    _IoTad.set_fan_by_id(command_on_off_number)
+  }
+
+}

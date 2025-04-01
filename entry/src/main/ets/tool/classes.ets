@@ -80,6 +80,8 @@ export class room{
 //30xx:空调
 //40xx:扫地机器人
 //50xx:冰箱
+//60XX:风扇
+
 export class Furniture {
 
   name:string = ''

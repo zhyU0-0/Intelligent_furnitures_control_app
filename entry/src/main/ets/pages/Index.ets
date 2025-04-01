@@ -14,6 +14,7 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { _IoTad } from './scan_devices';
 import { scene } from './scene_page';
+import { IoTad } from '../tool/IoTad';
 
 
 const max_temp = 30
@@ -90,15 +91,10 @@ struct homepage{
           console.log("q_room"+JSON.stringify(item))
         }
 
-
       console.log("open_arr_room:"+JSON.stringify(this.arr_room))
 
       setTimeout(async ()=>{
-        let data = await _IoTad.get_data()
-        if(data != -1){
-          console.log("data:::"+data)
-          this.analyze_data(data.toString())
-        }
+
           await tcp.getData()
           this.analyze_data(Data_Tcp)
 
@@ -390,6 +386,7 @@ struct userpage{
         Button("退出登录")
           .width("90%")
           .height(50)
+          .margin(10)
           .backgroundImage($r('app.media.btn_bg'))
           .backgroundImageSize(ImageSize.Cover)
           .fontColor(Color.White)
@@ -404,48 +401,55 @@ struct userpage{
         Button("我的家居")
           .width("90%")
           .height(50)
+          .margin(10)
           .backgroundImage($r('app.media.btn_bg'))
           .backgroundImageSize(ImageSize.Cover)
           .fontColor(Color.White)
           .borderRadius(10)
           .onClick(async () => {
-            this.is_show_all_f = true;
+            this.is_show_all_f = !this.is_show_all_f;
+
             this.f_arr = await Room_db.getAllFurinture();
             animateTo({ duration: 500 }, () => {
-              this._height = "50%";
+              if(this._height == "0%"){
+                this._height = "50%";
+              }else {
+                this._height = "0%"
+              }
             });
           });
+        if (this.is_show_all_f) {
+          Column() {
+            List() {
+              ForEach(this.f_arr, (item: Furniture, index) => {
+                ListItem() {
+                  Row() {
+                    Text(item.name)
+                      .fontSize(16)
+                    Text(item.type_id.toString())
+                      .fontSize(16)
+                  }
+                  .width('100%')
+                  .height(50)
+                  .justifyContent(FlexAlign.SpaceAround);
+                }
+              });
+            }
+          }
+          .width('90%')
+          .height(this._height)
+          .onClick(() => {
+            this.is_show_all_f = false;
+            this._height = '0%';
+          });
+        }
       }
       .width('100%')
       .height('100%')
       .alignItems(HorizontalAlign.Center);
 
-      if (this.is_show_all_f) {
-        Column() {
-          List() {
-            ForEach(this.f_arr, (item: Furniture, index) => {
-              ListItem() {
-                Row() {
-                  Text(item.name)
-                    .fontSize(16)
-                  Text(item.type_id.toString())
-                    .fontSize(16)
-                }
-                .width('100%')
-                .height(50)
-                .justifyContent(FlexAlign.SpaceAround);
-              }
-            });
-          }
-        }
-        .width('90%')
-        .height(this._height)
-        .onClick(() => {
-          this.is_show_all_f = false;
-          this._height = '0%';
-        });
-      }
-    }
+
+    }.width("100%").height("100%")
   }
 }
 //////////////////////////////*********************///////////////////////////////////////
