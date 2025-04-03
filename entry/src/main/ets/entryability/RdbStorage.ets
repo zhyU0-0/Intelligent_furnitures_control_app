@@ -340,6 +340,26 @@ export class RoomDatabase {
 
   }
 
+  async deleteRoomByName( name: string) {
+    if (!this.rdbStore) {
+      console.error('Database is not initialized.');
+      return;
+    }
+    try {
+      const roomId = await this.getRoomsIdByName(name)
+      //先删除房间ID对应的家居
+      const sql1 = 'DELETE FROM Furniture WHERE roomId =?';
+      const params = [roomId];
+      await this.rdbStore.executeSql(sql1, params);
+      //在删除房间
+      const sql2 = 'DELETE FROM Room WHERE id =?'
+      await this.rdbStore.executeSql(sql2,params)
+
+      console.log(`room with name ${name} deleted successfully.`);
+    } catch (err) {
+      console.error(`Failed to delete furniture: ${err.message}`);
+    }
+  }
 
   async deleteFurnitureByRoomIdAndName(roomId: number, name: string) {
     if (!this.rdbStore) {

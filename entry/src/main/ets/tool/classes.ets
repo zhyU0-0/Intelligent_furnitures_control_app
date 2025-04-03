@@ -78,9 +78,9 @@ export class room{
 //10xx:LED
 //20xx:窗帘
 //30xx:空调
-//40xx:扫地机器人
+//40xx:
 //50xx:冰箱
-//60XX:风扇
+//60XX:扫地机器人
 
 export class Furniture {
 

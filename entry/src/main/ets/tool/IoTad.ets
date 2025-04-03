@@ -68,7 +68,7 @@ interface _body4_push_air_condition{
   command_name:string
   paras:_paras5
 }
-interface _paras5{ aircondition:number }
+interface _paras5{ airconditioner:number }
 
 interface _body5_push_fan{
   service_id:string
@@ -221,7 +221,7 @@ export class IoTad{
       if (response.responseCode === 200) {
         console.log('Message sent successfully:', response.result.toString());
         let regex = /"response":(.*?)}}}/
-
+        console.log("Data::"+response.result)
         return response.result.toString().match(regex)?.toString().split(",")[1]+"}"
       } else {
         return -1
@@ -322,10 +322,10 @@ export class IoTad{
     const url = `https://${IOTDA_ENDPOINT}/v5/iot/${PROJECT_ID}/devices/${this.DEVICE_ID}/commands`;
     const body :_body4_push_air_condition = {
       service_id: "device_ctrl", // 设备模型中的服务 ID
-      command_name: "set_aircondition", // 命令名称
+      command_name: "set_airconditioner", // 命令名称
       paras: {
         // 命令参数
-        aircondition:commind
+        airconditioner:commind
       },
     };
 
@@ -362,7 +362,7 @@ export class IoTad{
     const url = `https://${IOTDA_ENDPOINT}/v5/iot/${PROJECT_ID}/devices/${this.DEVICE_ID}/commands`;
     const body :_body5_push_fan = {
       service_id: "device_ctrl", // 设备模型中的服务 ID
-      command_name: "set_aircondition", // 命令名称
+      command_name: "set_fan", // 命令名称
       paras: {
         // 命令参数
         fan:commind_on_or_off

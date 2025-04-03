@@ -19,6 +19,7 @@ struct Scan_devices {
   @State message: string = '开始体验';
   locals:LocalStoraga = new LocalStoraga("scan")
   async aboutToAppear() {
+    await _IoTad.init()
     if(await this.locals.getDate("is_scan")){
       router.replaceUrl({
         url:"pages/Index"
@@ -42,7 +43,7 @@ struct Scan_devices {
     });
 
 
-    await _IoTad.init()
+
 
   }
 

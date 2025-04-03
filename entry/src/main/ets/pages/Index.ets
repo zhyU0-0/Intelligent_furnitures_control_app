@@ -14,7 +14,6 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { _IoTad } from './scan_devices';
 import { scene } from './scene_page';
-import { IoTad } from '../tool/IoTad';
 
 
 const max_temp = 30
@@ -58,6 +57,7 @@ struct homepage{
   @State is_show_r:boolean = false
   @State is_sleep:boolean = false
   @State is_chang:boolean = false
+  @State is_delete_h:string= "0%"
   @Link arr_room:room[]
   @State is_show_humidity:boolean = false
   @State _height:string = "20%"
@@ -65,6 +65,7 @@ struct homepage{
   @State _width:string = '90%'
   @State temp:string = ''
   @State humi:string = ''
+  @State smoke:string = ''
   @Link is_warn:boolean
   @Link warn_data:Datamodel
 
@@ -95,15 +96,16 @@ struct homepage{
 
       setTimeout(async ()=>{
 
-          await tcp.getData()
-          this.analyze_data(Data_Tcp)
+        await tcp.getData()
+        console.log("Tcp_get_data : "+Data_Tcp)
+        this.analyze_data(Data_Tcp)
+          /*await tcp.getData()
+          this.analyze_data(Data_Tcp)*/
 
       },1000)
 
       /*setInterval(async ()=>{
-        await tcp.getData()
-        console.log("Tcp_get_data : "+Data_Tcp)
-        this.analyze_data(Data_Tcp)
+
       },3000)*/
 
     },100)
@@ -127,7 +129,7 @@ struct homepage{
     if(humi != null) {
       if (humi > max_humi) {
         let paramInfo: Datamodel = {
-          type: "temp",
+          type: "humi",
           data: humi,
           arr: await Room_db.getAllRooms()
         }
@@ -148,9 +150,6 @@ struct homepage{
         }
       }
     };
-
-
-
       notificationManager.publish(notificationRequest, (err: BusinessError) => {
         if (err) {
           hilog.error(DOMAIN_NUMBER, TAG, `Failed to publish notification. Code is ${err.code}, message is ${err.message}`);
@@ -163,7 +162,6 @@ struct homepage{
   analyze_data(data:string){
     let arr:string[] = data.split("/")
     for(let item of arr){
-
       console.log("TCp data:"+item)
       let values:string = JSON.parse(item)
       if(typeof values?.["temp"] != "undefined") {
@@ -203,7 +201,59 @@ struct homepage{
 
     }
   }
+//{"temperature":0,"humidity":0,"smoke":2148,"motion_state":0,"1001":{“switch”:1}}}
+  new_analyze_data(data:string){
+    let arr:string[] = data.split("/")
+    for(let item of arr){
+      console.log("IoTad data:"+item)
+      let values:string = JSON.parse(item)
+      values = values?.['data']
+      if(typeof values?.["temperature"] != "undefined") {
+        this.temp = values?.["temperature"]
+        this.humi = values?.["humidity"]
+        this.smoke = values?.['smoke']
+        this.judge(Number(this.temp),Number(this.humi))
+        console.log("IoTad send temp"+this.temp+"::"+this.humi)
+        let new_arr_room:room[] = []
+        for (let r of this.arr_room){
+          let new_arr_f:Furniture[] = []
+          for (let f of r.furniture_s){
+            if(typeof values?.[f.type_id.toString()] != "undefined"){
+              let new_v:string = values?.[f.type_id.toString()]
+              new_v = JSON.parse(new_v)
+              if(f.type_id<999){
 
+              }else if(f.type_id<1999){
+
+              }else if(f.type_id<2999){
+
+              }else if(f.type_id<3999){
+
+              }
+              /*if(typeof new_v?.["lighting"] != "undefined") {
+                f = new Furniture(f.name,values?.["switch"],values?.["id"])
+                f.lighting = values?.["lighting"]
+                console.log("udp send t"+f.switch+"::"+f.lighting+'::'+f.type_id)
+              }else if(typeof values?.["a_temp"] != "undefined"){
+                f = new Furniture(f.name,values?.["switch"],values?.["id"])
+                f.temp = values?.["a_temp"]
+                f.is_dry = values?.["is_dry"]
+              }
+              else {
+                f = new Furniture(f.name,values?.["switch"],values?.["id"])
+                console.log("udp send t"+f.switch+"::"+f.type_id)
+              }*/
+            }
+            new_arr_f.push(f)
+          }
+          new_arr_room.push(new room(r.name,new_arr_f))
+          console.log("UDP ROOM NEW"+JSON.stringify(r))
+        }
+        this.arr_room = new_arr_room
+      }
+
+    }
+  }
 
 
   @Builder
@@ -216,6 +266,10 @@ struct homepage{
         router.pushUrl({
           url:"pages/Search_devices"
         })
+      })
+      MenuItem({content:"删除房间"}).onClick(()=>{
+        animateTo({duration:500},()=>this.is_delete_h = "90%")
+
       })
     }
   }
@@ -235,7 +289,12 @@ struct homepage{
                 .margin({ bottom: 5 });
               Text("湿度：" + this.humi)
                 .fontSize(18)
-                .fontColor(this.is_sleep ?'transparent'  : '#6d9cee');
+                .fontColor(this.is_sleep ?'transparent'  : '#6d9cee')
+                .margin({ bottom: 5 });
+              Text("烟雾：" + this.smoke)
+                .fontSize(20)
+                .fontColor(this.is_sleep ?'transparent'  : '#6d9cee')
+                .margin({ bottom: 5 });
             }.width("50%").height('100')
             .onClick(()=>{
               //this.is_show_humidity = !this.is_show_humidity
@@ -245,7 +304,7 @@ struct homepage{
             })
             Column(){
               Row(){
-                Button(this.is_Lock ? '开锁' : '关锁')
+                /*Button(this.is_Lock ? '开锁' : '关锁')
                   .backgroundColor(this.is_sleep ? 'transparent'  : '#e0efff')
                   .fontColor(this.is_sleep ? 'transparent'  : '#6d9cee')
                   .padding({ left: 15, right: 15 })
@@ -262,14 +321,16 @@ struct homepage{
                         this._width = "90%";
                       }
                     });
-                  });
+                  });*/
                 Button('+')
                   .backgroundColor(this.is_sleep?'transparent'   : '#e0efff')
                   .fontColor(this.is_sleep ? 'transparent'  : '#6d9cee')
                   .padding({ left: 15, right: 15 })
-                  .bindMenu(this.MenuBar);
+                  .bindMenu(this.MenuBar)
+                  .width(80)
+                  .height(80);
               }
-              Button(this.is_sleep ? "退出睡觉模式" : "进入睡觉模式")
+              /*Button(this.is_sleep ? "退出睡觉模式" : "进入睡觉模式")
                 .backgroundColor( '#e0efff')
                 .fontColor(this.is_sleep?'rgb(70, 100, 180)': '#6d9cee')
                 .padding({ left: 15, right: 15 })
@@ -286,7 +347,7 @@ struct homepage{
                       this._width = "90%";
                     }
                   });
-                });
+                });*/
             }
           }.height(this._height).width(this._width)
           .backgroundImage($r(this.backG))
@@ -304,10 +365,10 @@ struct homepage{
           }
         }
       }
+      //显示温度详情数据
       detail_data({_h:this._h_detail,is_show:this.is_show_humidity,serOption_hump:this.serOption})
-
-
-
+      //删除房间
+      delete_room({_h:this.is_delete_h,arr_room:this.arr_room})
       //主体
       Column(){
         displayRoom({is_show_r:this.is_show_r,arr_room:this.arr_room,is_sleep:this.is_sleep})
@@ -350,10 +411,47 @@ struct detail_data{
     }.height(this._h).width(this._w)
   }
 }
-
+@Component
+struct delete_room{
+  @Link arr_room:room[]
+  @Link _h:string
+  build() {
+    Column() {
+      Button("返回").onClick(()=>{
+        animateTo({duration:500},()=>this._h = "0%")
+      } )
+      List(){
+        ForEach(this.arr_room,(item:room,value)=>{
+          ListItem() {
+            Row(){
+              Text(item.name).width("50%")
+              Row().width('20%')
+              Button("删除")
+                .onClick(async ()=>{
+                  //删除房间数据
+                  this.getUIContext().showActionSheet({
+                    title: `是否删除"${item.name}"`,
+                    message: "请确认",
+                    sheets: [
+                      {title:"确认",action:async ()=>{
+                        await Room_db.deleteRoomByName(item.name)
+                        this.arr_room = this.arr_room.filter((element)=>element.name!== this.arr_room[value].name)
+                      }},
+                      {title:"取消",action:()=>{}}
+                    ]
+                  })
+                  //this.arr_f = this.arr_f.filter((element) => element.name!== this.arr_f[this.index_f].name);
+                })
+            }
+          }
+        })
+      }
+    }.height(this._h).width("100%")
+  }
+}
 @Component
 struct userpage{
-  localstorage: LocalStoraga = new LocalStoraga("User_data");
+  localstorage: LocalStoraga = new LocalStoraga("userData");
   @State username: string = '';
   @State is_show_all_f: boolean = false;
   @State f_arr: Furniture[] = [];
@@ -361,7 +459,7 @@ struct userpage{
 
   aboutToAppear() {
     console.log("user", 'into');
-    this.localstorage.getDate("username").then(_User_ => {
+    this.localstorage.getDate("last_login").then(_User_ => {
       console.log("user", _User_);
       this.username = _User_ as string;
     });
@@ -392,7 +490,7 @@ struct userpage{
           .fontColor(Color.White)
           .borderRadius(10)
           .onClick(() => {
-            this.localstorage.setDate('is_landing', false);
+            this.localstorage.setDate('is_land', false);
             router.replaceUrl({
               url: 'pages/Open'
             });

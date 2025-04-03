@@ -338,7 +338,9 @@ export struct add_room_page {
               if (this.fur_name != '') {
                 let success = await Room_db.insertRoom(new room(this.fur_name, []))
                 if(success != -1){
-                  this.arr.push(new room(this.fur_name, []))
+                  setTimeout(()=>{
+                    this.arr.push(new room(this.fur_name, []))
+                  },500)
                 }else{
                   AlertDialog.show({
                     message:"名字重复了喂 >o< "
@@ -625,7 +627,7 @@ export struct displayRoom {
   @State is_show_curtain:boolean = false
   @State is_show_fan:boolean = false
   @State value:number = 0
-  @State is_edit:boolean = false
+  //@State is_edit:boolean = false
   @State edit_f:Furniture = new Furniture("",0,0)
   @State edit_height:string = '0%'
   l:number = 0
@@ -656,7 +658,7 @@ export struct displayRoom {
               Image($r('app.media.bottom_bg1'))
                 .objectFit(ImageFit.Cover);
               Column(){
-                show_f({arr:this.arr_room,is_show_edit:this.is_edit,f:this.edit_f,h:this.edit_height})
+                show_f({arr:this.arr_room,f:this.edit_f})
               List() {
                 ListItem() {
                   Text("灯光控制")
@@ -766,13 +768,13 @@ export struct displayRoom {
       if(this.is_show_r){
         add_room_page({ arr: this.arr_room, is_show: this.is_show_r })
       }
-      if(this.is_edit){
+      /*if(this.is_edit){
         furniture_edit({
           furniturn:this.edit_f,
           is_show_f:this.is_edit,
           _height:this.edit_height
         })
-      }
+      }*/
     }
   }
 }
@@ -1074,9 +1076,9 @@ struct show_f{
   @Link arr:room[]
   @State ex_condition:boolean = false
   @State open_List:Furniture[] = []
-  @Link is_show_edit:boolean
+  @State is_show_edit:boolean = false
   @Link f:Furniture
-  @Link h:string
+  @State h:string = "13%"
 
   async aboutToAppear(){
     console.log("f:::11")
@@ -1104,18 +1106,27 @@ struct show_f{
       List(){
         ForEach(this.open_List,(item:Furniture)=>{
           ListItem(){
-            Column(){
+            Row(){
               Text(item.name)
+              if(this.is_show_edit){
+
+                Text("id:"+item.type_id)
+              }
+
             }
             .height(50)
-            .width(50)
+            .width(this.h)
             .borderRadius(25)
             .backgroundColor(Color.Pink)
             .onClick(()=>{
-              this.is_show_edit = true
+              this.is_show_edit = !this.is_show_edit
               this.f = item
               animateTo({duration:200},()=>{
-                this.h = "100%"
+                if(this.is_show_edit){
+                  this.h = "60%"
+                }else{
+                  this.h = "13%"
+                }
               })
             })
           }
@@ -1555,18 +1566,18 @@ function set_furniture(item:Furniture,command_on_off_number:string){
 
   if(item.type_id<999){
 
-  }else if(item.type_id<2000){
+  }else if(item.type_id<2000){//灯
 
-  }else if(item.type_id<3000){
+  }else if(item.type_id<3000){//窗帘
     _IoTad.set_curtain_by_id(command_on_off_number)
-  }else if(item.type_id<4000){
+  }else if(item.type_id<4000){//空调
     _IoTad.set_air_condition_by_id(Number(command_on_off_number))
-  }else if(item.type_id<5000){
-
+  }else if(item.type_id<5000){//风扇
+    _IoTad.set_fan_by_id(command_on_off_number)
   }else if(item.type_id<6000){
 
   }else if(item.type_id<7000){
-    _IoTad.set_fan_by_id(command_on_off_number)
+
   }
 
 }
