@@ -537,10 +537,41 @@ export struct myRow {
       Stack(){
         Row() {
           Text(this.item1.name)
-          Image($r('app.media.curtain6'))
-            .height(20)
-            .width(20)
-            .fillColor('rgb(70, 100, 180)');
+          if(this.item1.type_id<999){
+
+          }else if(this.item1.type_id<1999){
+            Image($r('app.media.curtain6'))
+              .height(20)
+              .width(20)
+              .fillColor('rgb(70, 100, 180)');
+          }else if(this.item1.type_id<2999){
+            Image($r('app.media._curtain'))
+              .height(20)
+              .width(20)
+              .fillColor('rgb(70, 100, 180)');
+          }else if(this.item1.type_id<3999){
+            Image($r('app.media._air_condition'))
+              .height(20)
+              .width(20)
+              .fillColor('rgb(70, 100, 180)');
+          }else if(this.item1.type_id<4999){
+            Image($r('app.media._robot'))
+              .height(20)
+              .width(20)
+              .fillColor('rgb(70, 100, 180)');
+          }else if(this.item1.type_id<5999){
+            Image($r('app.media._icebox'))
+              .height(20)
+              .width(20)
+              .fillColor('rgb(70, 100, 180)');
+          }
+          else if(this.item1.type_id<6999){
+            Image($r('app.media._fan'))
+              .height(20)
+              .width(20)
+              .fillColor('rgb(70, 100, 180)');
+          }
+
         }
         .justifyContent(FlexAlign.SpaceAround)
         .height(100)
@@ -559,7 +590,7 @@ export struct myRow {
       Stack(){
         Row() {
           Text(this.item1.name)
-          Image($r('app.media.light2'))
+          Image($r('app.media.curtain6'))
             .height(20)
             .width(20)
             .fillColor('rgb(70, 100, 180)');
@@ -592,18 +623,15 @@ export struct displayRoom {
   @State is_show_air_condition:boolean = false
   @State is_show_robot:boolean = false
   @State is_show_curtain:boolean = false
+  @State is_show_fan:boolean = false
   @State value:number = 0
   @State is_edit:boolean = false
   @State edit_f:Furniture = new Furniture("",0,0)
   @State edit_height:string = '0%'
   l:number = 0
-
-
   async aboutToAppear(): Promise<void> {
-
     new_arr_rooms = this.arr_room
     this.l = this.arr_room.length
-
   }
   aboutToRecycle(): void {
     console.log("room:Recycle")
@@ -687,6 +715,19 @@ export struct displayRoom {
                 .onClick(() => {
                   this.is_show_air_condition = true
                 })
+                ListItem() {
+                  Text("风扇控制")
+                    .fontColor('rgb(70, 100, 180)')
+                    .position({ y: 40, x: 35 });
+                }
+                .width(150).height(200).borderWidth(2).borderColor(Color.White).padding(10).margin({ top: 0, bottom: 40, left: 10, right: 10 })
+                .backgroundImage($r('app.media.ufo2'))
+                .backgroundImageSize(ImageSize.Cover)
+                .shadow({ radius: 5, offsetX: 10, offsetY: 10, color: "#939391" })
+                .borderRadius(10)
+                .onClick(() => {
+                  this.is_show_fan = true
+                })
               }.lanes(2)
               }
               if (this.is_show_lights) {
@@ -701,6 +742,9 @@ export struct displayRoom {
               //门锁
               if(this.is_show_robot){
                 face_cam({is_show:this.is_show_robot})
+              }
+              if(this.is_show_fan){
+                control_fan({arr_room:this.arr_room,is_show:this.is_show_fan})
               }
             }
 
@@ -968,6 +1012,52 @@ struct control_curtain{
                   }
 
 
+                })
+              }.lanes(2)
+            }.backgroundColor(Color.Pink)
+          }.tabBar(item.name)
+        })
+      }.height("30%").vertical(true)
+    }.backgroundColor(Color.White)
+    .width("100%").height("100%")
+  }
+}
+
+@Component
+struct control_fan{
+  @Link is_show:boolean
+  @Link arr_room:room[]
+
+  aboutToAppear(): void {
+
+  }
+  build() {
+    Column(){
+      Button().onClick(()=>{this.is_show = false})
+      Tabs(){
+        ForEach(this.arr_room,(item:room)=>{
+          TabContent(){
+            Column(){
+              Text(item.name)
+              List(){
+                ForEach(item.furniture_s,(item:Furniture)=>{
+                  if(item.type_id>5999&&item.type_id<7000){
+                    ListItem(){
+                      Row(){
+                        Text(item.name)
+                        Toggle({ type: ToggleType.Switch, isOn:item.switch? true:false })
+                          .onClick(() => {
+                            if (!item.switch) {
+                              item.switch = 1
+                              _IoTad.set_fan_by_id("on")
+                            } else {
+                              item.switch = 0
+                              _IoTad.set_fan_by_id("off")
+                            }
+                          })
+                      }.backgroundColor(Color.White).width("100%").padding(10)
+                    }
+                  }
                 })
               }.lanes(2)
             }.backgroundColor(Color.Pink)

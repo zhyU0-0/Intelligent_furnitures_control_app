@@ -179,7 +179,7 @@ struct CameraPage {
   //  //${this.ip}:${this.port}/stream
   build() {
     Column() {
-      Web({ src: `https://www.baidu.com/`,controller:new webview.WebviewController })
+      Web({ src: `http://192.168.204.68`,controller:new webview.WebviewController })
         .width('100%')
         .height(300)
       /*.onControllerReady((controller) => {
