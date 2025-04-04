@@ -557,7 +557,7 @@ export struct myRow {
               .width(20)
               .fillColor('rgb(70, 100, 180)');
           }else if(this.item1.type_id<4999){
-            Image($r('app.media._robot'))
+            Image($r('app.media._fan'))
               .height(20)
               .width(20)
               .fillColor('rgb(70, 100, 180)');
@@ -568,7 +568,7 @@ export struct myRow {
               .fillColor('rgb(70, 100, 180)');
           }
           else if(this.item1.type_id<6999){
-            Image($r('app.media._fan'))
+            Image($r('app.media._robot'))
               .height(20)
               .width(20)
               .fillColor('rgb(70, 100, 180)');
@@ -1076,9 +1076,10 @@ struct show_f{
   @Link arr:room[]
   @State ex_condition:boolean = false
   @State open_List:Furniture[] = []
-  @State is_show_edit:boolean = false
+  @State is_show_edit_List:boolean[] = []
+  @State is_edit_h:string[] = []
   @Link f:Furniture
-  @State h:string = "13%"
+
 
   async aboutToAppear(){
     console.log("f:::11")
@@ -1094,6 +1095,8 @@ struct show_f{
           if(f.switch == 1&&f.type_id>2999){
             this.ex_condition = true
             this.open_List.push(f)
+            this.is_show_edit_List.push(false)
+            this.is_edit_h.push("13%")
           }
         }
       }
@@ -1104,28 +1107,57 @@ struct show_f{
 
     if(this.ex_condition){
       List(){
-        ForEach(this.open_List,(item:Furniture)=>{
+        ForEach(this.open_List,(item:Furniture,value)=>{
           ListItem(){
             Row(){
-              Text(item.name)
-              if(this.is_show_edit){
+              Column(){
+                if(item.type_id<999){
 
+                }else if(item.type_id<2000){//灯
+
+                }else if(item.type_id<3000){//窗帘
+                  Image($r("app.media._curtain"))
+                    .fillColor(this.select_color(value))
+                }else if(item.type_id<4000){//空调
+                  Image($r("app.media._air_condition"))
+                    .fillColor(this.select_color(value))
+                }else if(item.type_id<5000){//风扇
+                  Image($r("app.media._fan"))
+                    .fillColor(this.select_color(value))
+                }else if(item.type_id<6000){
+                  Image($r("app.media._icebox"))
+                    .fillColor(this.select_color(value))
+                }else if(item.type_id<7000){
+                  Image($r("app.media._robot"))
+                    .fillColor(this.select_color(value))
+                }
+              }.height(48)
+              .width(48)
+              .borderRadius(24)
+              .padding(5)
+              .backgroundColor(Color.White)
+
+              if(this.is_show_edit_List[value]){
+                Text(item.name)
                 Text("id:"+item.type_id)
+
               }
+              Row().width(50)
 
             }
+            .justifyContent(FlexAlign.SpaceBetween)
             .height(50)
-            .width(this.h)
+            .width(this.is_edit_h[value])
             .borderRadius(25)
-            .backgroundColor(Color.Pink)
+            .backgroundColor("#ffc4c4c4")
             .onClick(()=>{
-              this.is_show_edit = !this.is_show_edit
+              this.is_show_edit_List[value] = !this.is_show_edit_List[value]
               this.f = item
               animateTo({duration:200},()=>{
-                if(this.is_show_edit){
-                  this.h = "60%"
+                if(this.is_show_edit_List[value]){
+                  this.is_edit_h[value] = "60%"
                 }else{
-                  this.h = "13%"
+                  this.is_edit_h[value] = "13%"
                 }
               })
             })
@@ -1140,6 +1172,17 @@ struct show_f{
 
 
 
+  }
+  select_color(value:number):string{
+    if(value/3==0){
+      return"#ff9d7998"
+    }
+    else if(value/3==1){
+      return"#ff8c84a5"
+    }
+    else{
+      return"#ff828ba4"
+    }
   }
 }
 

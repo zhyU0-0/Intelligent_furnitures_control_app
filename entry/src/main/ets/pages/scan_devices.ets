@@ -50,22 +50,32 @@ struct Scan_devices {
 
   build() {
     RelativeContainer() {
-      Text(this.message)
-        .id('Scan_devicesHelloWorld')
-        .fontSize($r('app.float.page_text_font_size'))
-        .fontWeight(FontWeight.Bold)
-        .alignRules({
-          center: { anchor: '__container__', align: VerticalAlign.Center },
-          middle: { anchor: '__container__', align: HorizontalAlign.Center }
-        })
-        .onClick(() => {
-          this.locals.setDate("is_scan",true)
-          router.replaceUrl({
-            url:"pages/Index"
-          })
-        })
+      Column(){
+        Row(){
+          Text(this.message)
+            .id('Scan_devicesHelloWorld')
+            .fontSize($r('app.float.page_text_font_size'))
+            .fontWeight(FontWeight.Bold)
+            .alignRules({
+              center: { anchor: '__container__', align: VerticalAlign.Center },
+              middle: { anchor: '__container__', align: HorizontalAlign.Center }
+            })
+            .fontColor(Color.White)
+        }
+      }.width("100%").height("20%").backgroundColor("##6d9cee").justifyContent(FlexAlign.Center)
+
+
+
     }
+    .backgroundImage($r("app.media.back_house1"))
+    .backgroundImageSize(ImageSize.Cover)
     .height('100%')
     .width('100%')
+    .onClick(() => {
+      this.locals.setDate("is_scan",true)
+      router.replaceUrl({
+        url:"pages/Index"
+      })
+    })
   }
 }

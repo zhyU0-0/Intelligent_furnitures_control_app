@@ -282,6 +282,7 @@ struct homepage{
       Row(){
         Stack(){
           Row(){
+            Column().width("15%")
             Column(){
               Text("温度：" + this.temp)
                 .fontSize(20)
@@ -327,8 +328,8 @@ struct homepage{
                   .fontColor(this.is_sleep ? 'transparent'  : '#6d9cee')
                   .padding({ left: 15, right: 15 })
                   .bindMenu(this.MenuBar)
-                  .width(80)
-                  .height(80);
+                  .width(50)
+                  .height(50);
               }
               /*Button(this.is_sleep ? "退出睡觉模式" : "进入睡觉模式")
                 .backgroundColor( '#e0efff')
@@ -684,19 +685,25 @@ export class Datamodel{
 export struct WarnPage {
   title:string = "warning!!"
   @Link warn_data:Datamodel
+  @State Warn_f_list:Furniture[] = []
   @State have_air_condition:boolean = false
+  @State have_fan:boolean = false
   @Link is_warn:boolean
   @State a_id:number = 0
   aboutToAppear(): void {
     for(let r of this.warn_data.arr){
       for(let f of r.furniture_s){
         if(f.type_id<4000&&f.type_id>2999){
+          this.Warn_f_list.push(f)
           this.have_air_condition = true
           this.a_id = f.type_id
         }
+        if(f.type_id>3999&&f.type_id<5000){
+          this.Warn_f_list.push(f)
+          this.have_fan = true
+        }
       }
     }
-
   }
   build() {
     Stack() {
@@ -707,44 +714,117 @@ export struct WarnPage {
           Text(this.warn_data.data.toString())
             .fontColor(Color.Red)
             .fontSize(100);
-          Text("***温度过高***")
+          Text("***温度警告***")
             .fontSize(18);
           Text("解决方案：目前温度已超过安全标准，请立即行动起来！！")
             .fontSize(16);
           Button(this.have_air_condition ? "开空调" : "开窗")
-            .backgroundColor('#4A90E2')
-            .fontColor(Color.White)
-            .borderRadius(10)
+            .backgroundColor(Color.White)
+            .width("50%")
+            .height(50)
+            .borderRadius(5)
+            .borderWidth(2)
+            .borderColor(Color.Black)
+            .fontColor(Color.Red)
             .padding({ left: 15, right: 15 })
-            .onClick(() => {
+            .onClick(async () => {
               if (this.have_air_condition) {
-                tcp.send_on(this.a_id);
+                await tcp.send_on(this.a_id)
+                await _IoTad.set_air_condition_by_id(20);
               }
               this.is_warn = false;
             });
+          Row().height(5)
+          Button("什么都不做")
+            .onClick(()=>{this.is_warn = false;})
+            .backgroundColor(Color.White)
+            .width("50%")
+            .height(50)
+            .borderRadius(5)
+            .borderWidth(2)
+            .borderColor("#ff3e3e3e")
+            .fontColor("#ff3e3e3e")
+
         }
       }
       if (this.warn_data.type == 'humi') {
         Column() {
-          Text(this.warn_data.data.toString())
-            .fontColor(Color.Red)
-            .fontSize(100);
-          Text("***湿度过高***")
+          Row(){
+            Text(this.warn_data.data.toString())
+              .fontColor(Color.Red)
+              .fontSize(100);
+          }
+
+          Text("***湿度警告***")
             .fontSize(18);
-          Text("解决方案：目前湿度已超过安全标准，请立即行动起来！！")
+          Text("解决方案：")
+            .fontSize(16);
+          Text("  目前湿度已超过安全标准，请立即行动起来！！")
             .fontSize(16);
           Button(this.have_air_condition ? "开空调，并开始除湿" : "开窗")
-            .backgroundColor('#4A90E2')
-            .fontColor(Color.White)
-            .borderRadius(10)
+            .backgroundColor(Color.White)
+            .backgroundColor(Color.White)
+            .width("50%")
+            .height(50)
+            .borderRadius(5)
+            .borderWidth(2)
+            .borderColor(Color.Black)
+            .fontColor(Color.Red)
             .padding({ left: 15, right: 15 })
             .onClick(async () => {
               if (this.have_air_condition) {
-                await tcp.send_on(this.a_id);
+                await tcp.send_on(this.a_id)
+                await _IoTad.set_air_condition_by_id(20);
               }
-              tcp.getData();
               this.is_warn = false;
             });
+          Row().height(5)
+          Button("什么都不做")
+            .onClick(()=>{this.is_warn = false;})
+            .backgroundColor(Color.White)
+            .width("50%")
+            .height(50)
+            .borderRadius(5)
+            .borderWidth(2)
+            .borderColor(Color.Black)
+            .fontColor(Color.Black)
+        }
+      }
+      if (this.warn_data.type == 'smoke') {
+        Column() {
+          Text(this.warn_data.data.toString())
+            .fontColor(Color.Red)
+            .fontSize(100);
+          Text("***烟雾报警***")
+            .fontSize(18);
+          Text("解决方案：目前温度已超过安全标准，请立即行动起来！！")
+            .fontSize(16);
+          Button(this.have_fan ? "打开排风扇" : "开窗")
+            .backgroundColor(Color.White)
+            .width("50%")
+            .height(50)
+            .borderRadius(5)
+            .borderWidth(2)
+            .borderColor(Color.Black)
+            .fontColor(Color.Red)
+            .padding({ left: 15, right: 15 })
+            .onClick(async () => {
+              if (this.have_air_condition) {
+                await tcp.send_on(this.a_id)
+                await _IoTad.set_air_condition_by_id(20);
+              }
+              this.is_warn = false;
+            });
+          Row().height(5)
+          Button("什么都不做")
+            .onClick(()=>{this.is_warn = false;})
+            .backgroundColor(Color.White)
+            .width("50%")
+            .height(50)
+            .borderRadius(5)
+            .borderWidth(2)
+            .borderColor("#ff3e3e3e")
+            .fontColor("#ff3e3e3e")
         }
       }
     }
