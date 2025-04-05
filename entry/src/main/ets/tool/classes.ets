@@ -104,10 +104,10 @@ export class Furniture {
   }
 
   //air_condition
-  public temp:number = 0;
+  public temp:number = 25;
   max_t:number = 30
   min_t:number = 17;
-  is_dry:number = 0;
+  mode:"zd"|"cs"|"zl"|"zr" = "zd";
 
   dry(){
     //打开除湿模式(>.<)

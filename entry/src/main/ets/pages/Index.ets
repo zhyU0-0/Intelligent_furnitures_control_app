@@ -37,13 +37,33 @@ function resolveIP(ip:number):string{
 @Component
 struct homepage{
 
-  @State serOption:Options = new Options({
+  @State serOption_temp:Options = new Options({
+    xAxis:{data:["0:00","3:00","6:00","9:00","12:00","15:00","18:00","21:00"]},
+    yAxis:{name:'温度'},
+    series:[{
+      name:'最高气温',
+      data:[14,16,17,18,22,22,21,18],
+      color:"#dd00dd",
+      arcLineWidth:100
+    }]
+  })
+  @State serOption_humi:Options = new Options({
+    xAxis:{data:["0:00","3:00","6:00","9:00","12:00","15:00","18:00","21:00"]},
+    yAxis:{name:'温度'},
+    series:[{
+      name:'平均湿度',
+      data:[40,41,42,40,42,50,55,46],
+      color: "#ff039f96",
+      arcLineWidth:100
+    }]
+  })
+  @State serOption_smoke:Options = new Options({
     xAxis:{data:["0:00","3:00","6:00","9:00","12:00","15:00","18:00","21:00"]},
     yAxis:{name:'温度'},
     series:[{
       name:'最高气温',
       data:[11,10,2,11,22,66,10,60],
-      color:"#dd00dd",
+      color: "#ffddb801",
       arcLineWidth:100
     }]
   })
@@ -184,7 +204,7 @@ struct homepage{
               }else if(typeof values?.["a_temp"] != "undefined"){
                 f = new Furniture(f.name,values?.["switch"],values?.["id"])
                 f.temp = values?.["a_temp"]
-                f.is_dry = values?.["is_dry"]
+                f.mode = values?.["mode"]
               }
               else {
                 f = new Furniture(f.name,values?.["switch"],values?.["id"])
@@ -301,28 +321,11 @@ struct homepage{
               //this.is_show_humidity = !this.is_show_humidity
               animateTo({duration:500},()=>{
                 this._h_detail = "90%"
+                this.is_show_humidity = true
               })
             })
             Column(){
               Row(){
-                /*Button(this.is_Lock ? '开锁' : '关锁')
-                  .backgroundColor(this.is_sleep ? 'transparent'  : '#e0efff')
-                  .fontColor(this.is_sleep ? 'transparent'  : '#6d9cee')
-                  .padding({ left: 15, right: 15 })
-                  .onClick(() => {
-                    this.is_Lock = !this.is_Lock;
-                    animateTo({ duration: 500 }, async () => {
-                      if (this.is_Lock) {
-                        this._height = "100%";
-                        this.backG = "app.media.back_house1";
-                        this._width = "100%";
-                      } else {
-                        this._height = "20%";
-                        this.backG = "app.media.back_house";
-                        this._width = "90%";
-                      }
-                    });
-                  });*/
                 Button('+')
                   .backgroundColor(this.is_sleep?'transparent'   : '#e0efff')
                   .fontColor(this.is_sleep ? 'transparent'  : '#6d9cee')
@@ -331,24 +334,7 @@ struct homepage{
                   .width(50)
                   .height(50);
               }
-              /*Button(this.is_sleep ? "退出睡觉模式" : "进入睡觉模式")
-                .backgroundColor( '#e0efff')
-                .fontColor(this.is_sleep?'rgb(70, 100, 180)': '#6d9cee')
-                .padding({ left: 15, right: 15 })
-                .onClick(() => {
-                  this.is_sleep = !this.is_sleep;
-                  animateTo({ duration: 500 }, async () => {
-                    if (this.is_sleep) {
-                      this._height = "100%";
-                      this.backG = "app.media.sleep";
-                      this._width = "100%";
-                    } else {
-                      this._height = "20%";
-                      this.backG = "app.media.back_house";
-                      this._width = "90%";
-                    }
-                  });
-                });*/
+
             }
           }.height(this._height).width(this._width)
           .backgroundImage($r(this.backG))
@@ -367,7 +353,13 @@ struct homepage{
         }
       }
       //显示温度详情数据
-      detail_data({_h:this._h_detail,is_show:this.is_show_humidity,serOption_hump:this.serOption})
+      detail_data({
+        _h:this._h_detail,
+        is_show:this.is_show_humidity,
+        serOption_humi:this.serOption_humi,
+        serOption_temp:this.serOption_temp,
+        serOption_smoke:this.serOption_smoke
+      })
       //删除房间
       delete_room({_h:this.is_delete_h,arr_room:this.arr_room})
       //主体
@@ -384,31 +376,60 @@ struct homepage{
 @Component
 struct detail_data{
   @Link is_show:boolean
-  @Link serOption_hump:Options
+  @Link serOption_humi:Options
+  @Link serOption_temp:Options
+  @Link serOption_smoke:Options
   @State _w:string = "100%"
   @Link _h:string
   build() {
     Column(){
-      Button("A")
+      Button("返回")
         .onClick(()=>{
+
           animateTo({duration:500},()=>{
             this._h = "0%"
+            this.is_show = false
           })
+
         })
-        Row().width('100%').height("25%").onClick(()=>{this.is_show = false})
-        Row(){
-          McLineChart({options:this.serOption_hump})
-        }.width('100%')
-        .height('50%')
-        .backgroundColor(Color.White)
-        .margin({ bottom: 10 })
-        .shadow({
-          color: '#0000001A',
-          radius: 10,
-          offsetX: 2,
-          offsetY: 2
-        });
-        Row().width('100%').height("25%").onClick(()=>{this.is_show = false})
+
+      Row().width("100%").height("10%")
+        if(this.is_show){
+          Row(){
+            Column(){
+              Text("平均湿度")
+            }.width("20%")
+            McLineChart({options:this.serOption_humi}).width("80%").padding(10)
+          }.width('100%')
+          .padding(10)
+          .height('30%')
+          .backgroundColor(Color.White)
+          .margin({ bottom: 10 })
+          .shadow({
+            color: '#0000001A',
+            radius: 10,
+            offsetX: 2,
+            offsetY: 2
+          });
+          Row(){
+            Column(){
+              Text("最高温度")
+            }.width("20%")
+            McLineChart({options:this.serOption_temp}).width("80%").padding(10)
+          }.width('100%')
+          .padding(10)
+          .height('30%')
+          .backgroundColor(Color.White)
+          .margin({ bottom: 10 })
+          .shadow({
+            color: '#0000001A',
+            radius: 10,
+            offsetX: 2,
+            offsetY: 2
+          });
+        }
+
+
     }.height(this._h).width(this._w)
   }
 }
@@ -421,6 +442,10 @@ struct delete_room{
       Button("返回").onClick(()=>{
         animateTo({duration:500},()=>this._h = "0%")
       } )
+        .backgroundColor(Color.White)
+        .borderWidth(2)
+        .borderColor('#6d9cee')
+        .fontColor('#6d9cee')
       List(){
         ForEach(this.arr_room,(item:room,value)=>{
           ListItem() {
@@ -428,6 +453,10 @@ struct delete_room{
               Text(item.name).width("50%")
               Row().width('20%')
               Button("删除")
+                .backgroundColor(Color.White)
+                .borderWidth(2)
+                .borderColor('#6d9cee')
+                .fontColor('#6d9cee')
                 .onClick(async ()=>{
                   //删除房间数据
                   this.getUIContext().showActionSheet({
@@ -445,6 +474,7 @@ struct delete_room{
                 })
             }
           }
+          ListItem().height(5)
         })
       }
     }.height(this._h).width("100%")
@@ -690,6 +720,7 @@ export struct WarnPage {
   @State have_fan:boolean = false
   @Link is_warn:boolean
   @State a_id:number = 0
+  @State Air_c:Furniture = new Furniture("",0,0)
   aboutToAppear(): void {
     for(let r of this.warn_data.arr){
       for(let f of r.furniture_s){
@@ -697,6 +728,7 @@ export struct WarnPage {
           this.Warn_f_list.push(f)
           this.have_air_condition = true
           this.a_id = f.type_id
+          this.Air_c = f
         }
         if(f.type_id>3999&&f.type_id<5000){
           this.Warn_f_list.push(f)
@@ -730,7 +762,7 @@ export struct WarnPage {
             .onClick(async () => {
               if (this.have_air_condition) {
                 await tcp.send_on(this.a_id)
-                await _IoTad.set_air_condition_by_id(20);
+                await _IoTad.set_air_condition_by_id(25,"on","zl");
               }
               this.is_warn = false;
             });
@@ -774,7 +806,7 @@ export struct WarnPage {
             .onClick(async () => {
               if (this.have_air_condition) {
                 await tcp.send_on(this.a_id)
-                await _IoTad.set_air_condition_by_id(20);
+                await _IoTad.set_air_condition_by_id(25,"on","cs");
               }
               this.is_warn = false;
             });
@@ -811,7 +843,7 @@ export struct WarnPage {
             .onClick(async () => {
               if (this.have_air_condition) {
                 await tcp.send_on(this.a_id)
-                await _IoTad.set_air_condition_by_id(20);
+                await _IoTad.set_fan_by_id("on");
               }
               this.is_warn = false;
             });

@@ -451,10 +451,10 @@ export struct myList {
               }else if(item.type_id>=3000&&item.type_id<4000){
                 if(item.switch){
                   this.arr_fnt[index] = new Furniture(item.name,0,item.type_id)
-                  set_furniture(item,"off")
+                  _IoTad.set_air_condition_by_id(item.temp,"off",item.mode)
                 }else{
                   this.arr_fnt[index] = new Furniture(item.name,1,item.type_id)
-                  set_furniture(item,"on")
+                  _IoTad.set_air_condition_by_id(item.temp,"on",item.mode)
                 }
               }
               else{
@@ -793,8 +793,8 @@ struct control_lights{
         .padding(10)
         .backgroundColor(Color.White)
         .borderWidth(2)
-        .borderColor('#ffc4a1ba')
-        .fontColor('#ffc4a1ba')
+        .borderColor('#6d9cee')
+        .fontColor('#6d9cee')
         .margin(10);
       if(this.arr_room[0].name != 'null'){
         List(){
@@ -1169,15 +1169,12 @@ struct show_f{
       .listDirection(Axis.Horizontal)
       .width("100%").height(60)
     }
-
-
-
   }
   select_color(value:number):string{
-    if(value/3==0){
+    if(value%3==0){
       return"#ff9d7998"
     }
-    else if(value/3==1){
+    else if(value%3==1){
       return"#ff8c84a5"
     }
     else{
@@ -1448,7 +1445,10 @@ export struct control_aircon {
   @State tempSetting: number = 26;
   @State acColor: string = '#42b983';
   @State is_chang: boolean = true;
+  @State is_exist_list:boolean[] = []
+  @State is_open_list:boolean[] = []
   @State is_exist:boolean = false
+  @State is_open:boolean = false
   private calculateAcColor(): string {
     switch (this.selectedMode) {
       case 'heat': return '#ff6b6b';
@@ -1459,12 +1459,25 @@ export struct control_aircon {
   }
   aboutToAppear(): void {
     for (let r of this.arr_room){
+      let _is_e = false
+      let _is_open = false
       for(let f of r.furniture_s){
         if(f.type_id>=3000&&f.type_id<4000){
-          this.is_exist = true
           this.tempSetting = f.temp
+          this.is_exist = true
+          _is_e = true
+          if(f.switch == 1){
+            this.is_open = true
+            _is_open = true
+          }
         }
       }
+      if(_is_e){
+        this.is_exist_list.push(true)
+      }else {this.is_exist_list.push(false)}
+      if(_is_open){
+        this.is_open_list.push(true)
+      }else {this.is_open_list.push(false)}
     }
   }
 
@@ -1481,89 +1494,130 @@ export struct control_aircon {
           .margin(5);
 
 
-        Row() {
-          ForEach(['auto', 'heat', 'cool', 'dry'] as ['auto', 'heat', 'cool', 'dry'], (mode: 'auto' | 'heat' | 'cool' | 'dry',value) => {
-            Button(mode.toUpperCase())
-              .onClick(() => {
-                this.selectedMode = mode;
-                this.acColor = this.calculateAcColor();
-              })
-              .padding(10)
-              .backgroundColor(this.selectedMode === mode ? this.Color_B[value] : '#e0e0e0')
-              .fontColor(this.selectedMode === mode ? '#e0e0e0':'#6d9cee')
-              .borderWidth(2)
-              .borderColor(this.selectedMode === mode ?'#e0e0e0':'#6d9cee')
-              .margin(5);
-          });
-        }
-        .margin(10);
-
-        Column() {
-          Text(`当前温度: ${this.tempSetting.toFixed(1)}°C`)
-            .fontSize(24)
-            .margin(10);
-
+        if(this.is_open){
           Row() {
-            Button('-')
-              .onClick(() => {
-                if (this.tempSetting > 16) {
-                  this.tempSetting -= 0.5;
-                  this.is_chang = !this.is_chang;
-                }
-              })
-              .padding(10)
-              .backgroundColor('#e0e0e0')
-              .margin(5);
-
-            this.CustomCircularProgress(); // 直接调用，无需传参
-
-            Button('+')
-              .onClick(() => {
-                if (this.tempSetting < 30) {
-                  this.tempSetting += 0.5;
-                  this.is_chang = !this.is_chang;
-                }
-              })
-              .padding(10)
-              .backgroundColor('#e0e0e0')
-              .margin(5);
+            ForEach(['auto', 'heat', 'cool', 'dry'] as ['auto', 'heat', 'cool', 'dry'], (mode: 'auto' | 'heat' | 'cool' | 'dry',value) => {
+              Button(mode.toUpperCase())
+                .onClick(() => {
+                  this.selectedMode = mode;
+                  this.acColor = this.calculateAcColor();
+                })
+                .padding(10)
+                .backgroundColor(this.selectedMode === mode ? this.Color_B[value] : '#e0e0e0')
+                .fontColor(this.selectedMode === mode ? '#e0e0e0':'#6d9cee')
+                .borderWidth(2)
+                .borderColor(this.selectedMode === mode ?'#e0e0e0':'#6d9cee')
+                .margin(5);
+            });
           }
           .margin(10);
-        }
-        .height("30%")
-        .width("80%")
-        .backgroundColor('#f8f8f8')
-        .borderRadius(15)
-        .padding(20);
 
-        List() {
-          ForEach(this.arr_room, (item: room) => {
-            ListItem() {
-              Row() {
-                Text(item.name)
-                  .fontSize(18)
-                  .margin(10)
-                  .width("30%");
+          Column() {
+            Text(`当前温度: ${this.tempSetting.toFixed(1)}°C`)
+              .fontSize(24)
+              .margin(10);
 
-                Row() {
-                  Image($r(`app.media.ac_${this.selectedMode}`))
-                    .height(40)
-                    .width(40)
-                    .fillColor(this.calculateAcColor());
+            Row() {
+              Button('-')
+                .onClick(async () => {
+                  if (this.tempSetting > 16) {
+                    this.tempSetting -= 0.5;
+                    this.is_chang = !this.is_chang;
+                    await _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode)
+                  }
+                })
+                .padding(10)
+                .backgroundColor('#e0e0e0')
+                .margin(5);
 
-                  Text(`${this.tempSetting.toFixed(1)}°C`)
-                    .fontSize(20)
-                    .margin(10);
-                }
-              }
-              .padding(20)
-              .backgroundColor('#ffffff')
-              .borderRadius(10)
-              .shadow({ radius: 3, offsetX: 2, offsetY: 2, color: '#999999' })
-              .height("15%")
-              .width("100%");
+              this.CustomCircularProgress(); // 直接调用，无需传参
+
+              Button('+')
+                .onClick(async () => {
+                  if (this.tempSetting < 30) {
+                    this.tempSetting += 0.5;
+                    this.is_chang = !this.is_chang;
+                    await _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode)
+                  }
+                })
+                .padding(10)
+                .backgroundColor('#e0e0e0')
+                .margin(5);
             }
-            ListItem().height(10)
+            .margin(10);
+          }
+          .height("30%")
+          .width("80%")
+          .backgroundColor('#f8f8f8')
+          .borderRadius(15)
+          .padding(20);
+
+        }
+        List() {
+          ForEach(this.arr_room, (item: room,value) => {
+            if(this.is_exist_list[value]){
+              ListItem() {
+                Row() {
+                  Text(item.name)
+                    .fontSize(18)
+                    .margin(10)
+                    .width("30%");
+
+                  Row() {
+                    Image($r(`app.media.ac_${this.selectedMode}`))
+                      .height(40)
+                      .width(40)
+                      .fillColor(this.calculateAcColor());
+
+                    Text(`${this.tempSetting.toFixed(1)}°C`)
+                      .fontSize(20)
+                      .margin(10);
+
+                    Toggle({ type: ToggleType.Switch, isOn:this.is_open_list[value]})
+                      .onClick(async ()=>{
+                        let _is_exist_open:boolean = false
+                        if(this.is_open_list[value]){
+                          this.is_open_list[value] = false
+                          await _IoTad.set_air_condition_by_id(25,"off",this.selectedMode)
+                          for(let i of this.is_open_list){
+                            if(i){
+                              _is_exist_open =true
+                            }
+                          }
+                          if(_is_exist_open){
+                            this.is_open = true
+                          }else {
+                            this.is_open = false
+                          }
+                        }else{
+                          this.is_open_list[value] = true
+                          await _IoTad.set_air_condition_by_id(25,"on",this.selectedMode)
+                          for(let i of this.is_open_list){
+                            if(i){
+                              _is_exist_open =true
+                            }
+                          }
+                          if(_is_exist_open){
+                            this.is_open = true
+                          }else {
+                            this.is_open = false
+                          }
+                        }
+                      })
+                      .margin(10)
+
+
+                  }
+                }
+                .padding(20)
+                .backgroundColor('#ffffff')
+                .borderRadius(10)
+                .shadow({ radius: 3, offsetX: 2, offsetY: 2, color: '#999999' })
+                .height("15%")
+                .width("100%");
+              }
+              ListItem().height(10)
+            }
           });
         }
         .margin(20);
@@ -1575,6 +1629,11 @@ export struct control_aircon {
       Column(){
         Text("还没有空调呢")
         Button("前往录入")
+          .padding(10)
+          .backgroundColor(Color.White)
+          .borderWidth(2)
+          .borderColor('#6d9cee')
+          .fontColor('#6d9cee')
       }
     }
     }
@@ -1614,7 +1673,7 @@ function set_furniture(item:Furniture,command_on_off_number:string){
   }else if(item.type_id<3000){//窗帘
     _IoTad.set_curtain_by_id(command_on_off_number)
   }else if(item.type_id<4000){//空调
-    _IoTad.set_air_condition_by_id(Number(command_on_off_number))
+
   }else if(item.type_id<5000){//风扇
     _IoTad.set_fan_by_id(command_on_off_number)
   }else if(item.type_id<6000){

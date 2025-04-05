@@ -38,10 +38,10 @@ struct Test_Page {
       }
       Row(){
         Button("空调25").onClick(()=>{
-          _IoTad.set_air_condition_by_id(25)
+          _IoTad.set_air_condition_by_id(25,"on","zl")
         })
         Button("空调28").onClick(()=>{
-          _IoTad.set_air_condition_by_id(28)
+          _IoTad.set_air_condition_by_id(28,"on","cs")
         })
       }
       Row(){

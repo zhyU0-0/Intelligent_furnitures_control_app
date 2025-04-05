@@ -68,7 +68,11 @@ interface _body4_push_air_condition{
   command_name:string
   paras:_paras5
 }
-interface _paras5{ airconditioner:number }
+interface _paras5{
+  airconditioner:number,
+  mode:string,
+  state:string
+}
 
 interface _body5_push_fan{
   service_id:string
@@ -316,7 +320,7 @@ export class IoTad{
 
   }
 
-  async set_air_condition_by_id(commind:number,id?:number){
+  async set_air_condition_by_id(commind:number,state:string,mode:string,id?:number){
 
     const httpRequest = http.createHttp();
     const url = `https://${IOTDA_ENDPOINT}/v5/iot/${PROJECT_ID}/devices/${this.DEVICE_ID}/commands`;
@@ -325,7 +329,9 @@ export class IoTad{
       command_name: "set_airconditioner", // 命令名称
       paras: {
         // 命令参数
-        airconditioner:commind
+        airconditioner:commind,
+        mode:mode,
+        state:state
       },
     };
 
