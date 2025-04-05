@@ -81,7 +81,7 @@ interface _body5_push_fan{
 }
 interface _paras6{ fan:string }
 
-export class IoTad{
+export class IoTda{
   Token:string = ''
   DEVICE_ID:string|undefined = "67df87e02902516e866a169d_1001"
 

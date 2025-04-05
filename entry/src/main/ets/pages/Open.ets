@@ -22,7 +22,7 @@ struct NewPage {
     this.userPreferences = await preferences.getPreferences(context, 'userData');
     const is_land =  await this.userPreferences.get("is_land",false)
     if(is_land){
-      router.replaceUrl({ url: "pages/scan_devices" });
+      router.replaceUrl({ url: "pages/Search_devices" });
     }
   }
 

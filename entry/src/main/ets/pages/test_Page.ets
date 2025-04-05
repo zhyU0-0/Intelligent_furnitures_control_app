@@ -1,8 +1,8 @@
-import { IoTad } from '../tool/IoTad';
+import { IoTda } from '../tool/IoTad';
 import { On } from '@ohos.UiTest';
 
 
-let _IoTad:IoTad = new IoTad()
+let _IoTad:IoTda = new IoTda()
 @Entry
 @Component
 struct Test_Page {

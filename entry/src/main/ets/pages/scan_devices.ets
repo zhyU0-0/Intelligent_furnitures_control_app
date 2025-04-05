@@ -1,4 +1,4 @@
-import { IoTad } from '../tool/IoTad';
+import { IoTda } from '../tool/IoTad';
 import Notification from '@ohos.notification'
 import Base from '@ohos.base'
 
@@ -11,7 +11,7 @@ import { LocalStoraga } from '../entryability/LocalStorage';
 
 
 
-export let _IoTad:IoTad = new IoTad()
+export let _IoTad:IoTda = new IoTda()
 
 @Entry
 @Component

@@ -1357,6 +1357,7 @@ export struct my_airCon_edit{
               .onClick(() => {
                 this.selectedMode = mode;
                 this.acColor = this.calculateAcColor();
+                _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode)
               })
               .padding(10)
               .backgroundColor(this.selectedMode === mode ? this.Color_B[value] : '#e0e0e0')
@@ -1379,6 +1380,7 @@ export struct my_airCon_edit{
                 if (this.tempSetting > 16) {
                   this.tempSetting -= 0.5;
                   this.is_chang = !this.is_chang;
+                  _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode)
                 }
               })
               .padding(10)
@@ -1392,6 +1394,7 @@ export struct my_airCon_edit{
                 if (this.tempSetting < 30) {
                   this.tempSetting += 0.5;
                   this.is_chang = !this.is_chang;
+                  _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode)
                 }
               })
               .padding(10)
@@ -1501,6 +1504,7 @@ export struct control_aircon {
                 .onClick(() => {
                   this.selectedMode = mode;
                   this.acColor = this.calculateAcColor();
+                  _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode)
                 })
                 .padding(10)
                 .backgroundColor(this.selectedMode === mode ? this.Color_B[value] : '#e0e0e0')

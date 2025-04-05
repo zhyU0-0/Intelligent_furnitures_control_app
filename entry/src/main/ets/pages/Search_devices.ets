@@ -5,6 +5,9 @@ import { socket } from '@kit.NetworkKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { wifi } from '@kit.ConnectivityKit';
 import { router } from '@kit.ArkUI';
+import { common } from '@kit.AbilityKit';
+import preferences from '@ohos.data.preferences';
+import { LocalStoraga } from '../entryability/LocalStorage';
 
 
 let udp:socket.UDPSocket = socket.constructUDPSocketInstance()
@@ -15,8 +18,16 @@ export struct search_device{
   @State _text:string = "点击按钮开始搜索"
   @State message:string = ''
   @State List:string[] = []
+  @State is_add_list:boolean[] = [false,false,false]
   @State is_add:boolean = false
+
+  @State local:LocalStoraga = new LocalStoraga("data")
   async aboutToAppear() {
+    /*const is_search =  await this.local.getDate("is_search")
+      if(is_search){
+        router.replaceUrl({url:"pages/Index"})
+        return
+      }*/
     await this.init()
   }
   build() {
@@ -31,17 +42,14 @@ export struct search_device{
                 Button('+')
                   .onClick(() => {
                     this.is_add = true
-                    setTimeout(() => {
+                    setTimeout(async () => {
+                      await this.local.setDate("is_search",true)
                       AlertDialog.show({ message: "添加成功！！" })
-                      router.back()
-
+                      router.replaceUrl({url:"pages/Index"})
                     }, 2000)
                   })
-
               }.width('100%').height("15%").backgroundColor(Color.White).justifyContent(FlexAlign.SpaceEvenly)
-
             }
-
             ListItem().height(3).backgroundColor("#00818181")
           })
         }
@@ -52,20 +60,34 @@ export struct search_device{
           })
       } else {
         Text(this._text)
-        Button()
+          .fontSize(30)
+        Button("搜索")
           .onClick(async () => {
             this._text = '正在搜索....'
-
             setTimeout(async () => {
               this.List.push("Hi3861")
               await this.search()
               this.close()
-            }, 5000)
+            }, 3000)
+            setTimeout(()=>{this.is_add_list[0]=true},800)
+            setTimeout(()=>{this.is_add_list[1]=true},1600)
+            setTimeout(()=>{this.is_add_list[2]=true},2400)
           })
       }
     }
       if (this.is_add){
-        Column().width("100%").height("100%").backgroundColor("#ff989898")
+        Column(){
+          Text("正在添加数据...")
+          if (this.is_add_list[0]) {
+            Text("项目id：0b37c83e2dba46e08ba5e1da37aeedc8")
+          }
+          if (this.is_add_list[1]) {
+            Text("服务地址：fa8fa44365.st1.iotda-app.cn-north-4.myhuaweicloud.com")
+          }
+          if (this.is_add_list[2]) {
+            Text("网关id：1001")
+          }
+        }.width("100%").height("100%").backgroundColor("#ff989898")
       }
     }
   }

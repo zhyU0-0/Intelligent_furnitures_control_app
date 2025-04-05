@@ -282,11 +282,6 @@ struct homepage{
       MenuItem({content:'添加房间'}).onClick(()=>{
         this.is_show_r = true
       })
-      MenuItem({content:'扫描设备'}).onClick(()=>{
-        router.pushUrl({
-          url:"pages/Search_devices"
-        })
-      })
       MenuItem({content:"删除房间"}).onClick(()=>{
         animateTo({duration:500},()=>this.is_delete_h = "90%")
 
@@ -450,7 +445,8 @@ struct delete_room{
         ForEach(this.arr_room,(item:room,value)=>{
           ListItem() {
             Row(){
-              Text(item.name).width("50%")
+              Row().width("10%")
+              Text(item.name).width("40%")
               Row().width('20%')
               Button("删除")
                 .backgroundColor(Color.White)
