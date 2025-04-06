@@ -8,6 +8,8 @@ const PASSWORD = '200626Qq'; // 华为云账号密码
 const DOMAIN_NAME = 'GT-2401_87842262'; // 账号所属域名
 const PROJECT_NAME = 'cn-north-4'; // 项目名称
 const PROJECT_ID = '0b37c83e2dba46e08ba5e1da37aeedc8'; // 项目 ID
+export let Data_id_yun:string = ''
+export let DATA_new:string = ''
 
 
 interface _body{
@@ -225,7 +227,10 @@ export class IoTda{
       if (response.responseCode === 200) {
         console.log('Message sent successfully:', response.result.toString());
         let regex = /"response":(.*?)}}}/
+        let regex1 = /"command_id":(.*?),"response"/
         console.log("Data::"+response.result)
+        DATA_new = response.result.toString().match(regex)?.toString().split(",")[1]+"}"
+        Data_id_yun = response.result.toString().match(regex1)?.toString().split(",")[1]+"}"
         return response.result.toString().match(regex)?.toString().split(",")[1]+"}"
       } else {
         return -1

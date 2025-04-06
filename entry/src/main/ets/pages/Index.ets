@@ -14,10 +14,13 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { _IoTad } from './scan_devices';
 import { scene } from './scene_page';
+import { Data_id_yun, DATA_new } from '../tool/IoTad';
 
-
+let DATA_IoTda:string =''
+let Data_Id_me:string = ''
 const max_temp = 30
 const max_humi = 90
+const max_smoke = 100
 const TAG: string = '[PublishOperation]';
 const DOMAIN_NUMBER: number = 0xFF00;
 //export let udp:_Udp = new _Udp(3861,'172.16.0.119')
@@ -119,15 +122,15 @@ struct homepage{
         await tcp.getData()
         console.log("Tcp_get_data : "+Data_Tcp)
         this.analyze_data(Data_Tcp)
-          /*await tcp.getData()
-          this.analyze_data(Data_Tcp)*/
 
       },1000)
 
       /*setInterval(async ()=>{
-
-      },3000)*/
-
+        if(Data_Id_me != Data_id_yun){
+          DATA_IoTda = DATA_new
+          await this.new_analyze_data(DATA_IoTda)
+        }
+      },1000)*/
     },100)
     //setTimeout(()=>{ this.udp_send()},1000)
   }
@@ -221,8 +224,8 @@ struct homepage{
 
     }
   }
-//{"temperature":0,"humidity":0,"smoke":2148,"motion_state":0,"1001":{“switch”:1}}}
-  new_analyze_data(data:string){
+//{"temperature":0,"humidity":0,"smoke":2148,"motion_state":0,"1001_1":0,"1001_2":5000,"3001_1":1,"3001_3":24,"3001_4":"zl"}}
+  async new_analyze_data(data:string){
     let arr:string[] = data.split("/")
     for(let item of arr){
       console.log("IoTad data:"+item)

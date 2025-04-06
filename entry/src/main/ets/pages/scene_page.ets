@@ -242,83 +242,89 @@ struct leaving_scene {
   @State isAirConditionShow: boolean = false;
 
   build(): void {
-    Column() {
-      Row() {
-        Image($r("app.media.ic_back"))
-          .fillColor('#ff111141')
-          .width(24)
-          .height(24)
-          .onClick(() => this.closePanel());
-        Text("离家模式")
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .layoutWeight(1)
-          .textAlign(TextAlign.Center);
+    Stack(){
+      Column() {
+        Row() {
+          Image($r("app.media.ic_back"))
+            .fillColor('#ff111141')
+            .width(24)
+            .height(24)
+            .onClick(() => this.closePanel());
+          Text("离家模式")
+            .fontSize(20)
+            .fontWeight(FontWeight.Bold)
+            .layoutWeight(1)
+            .textAlign(TextAlign.Center);
+        }
+        .padding(16)
+        .backgroundColor('#ffaaabff')
+        .backdropBlur(10);
+
+        Row() {
+          EnvironmentItem({
+            icon: $r("app.media.ic_temp"),
+            value: '26℃',
+            title: '室内温度',
+            color: '#E74C3C'
+          });
+
+          EnvironmentItem({
+            icon: $r("app.media.ic_humidity"),
+            value: '55%',
+            title: '环境湿度',
+            color: '#3498DB'
+          });
+
+          EnvironmentItem({
+            icon: $r("app.media.ic_gas"),
+            value: '正常',
+            title: '燃气状态',
+            color: '#ff544539'
+          });
+        }
+        .padding(16)
+        .justifyContent(FlexAlign.SpaceEvenly);
+
+        List() {
+          ControlItem({
+            params: {
+              icon: $r("app.media.ic_camera"),
+              title: "安防摄像头",
+              status: "在线",
+              buttonText: "实时查看",
+              onAction: () => this.viewCamera()
+            }
+          });
+
+          ControlItem({
+            params: {
+              icon: $r("app.media.ac_icon"),
+              title: "空调控制",
+              status: "26℃ 制冷模式",
+              buttonText: "远程调节",
+              onAction: () => this.isAirConditionShow = true
+            }
+          });
+
+          ControlItem({
+            params: {
+              icon: $r("app.media.ic_feeder"),
+              title: "宠物喂食器",
+              status: "剩余量：65%",
+              buttonText: "立即投喂",
+              onAction: () => this.feedPet()
+            }
+          });
+        }
+        .borderRadius(16)
+        .margin(16)
+        .backgroundColor(Color.White)
+        .shadow({ radius: 8, color: '#00000010' });
+
+
       }
-      .padding(16)
-      .backgroundColor('#ffaaabff')
-      .backdropBlur(10);
-
-      Row() {
-        EnvironmentItem({
-          icon: $r("app.media.ic_temp"),
-          value: '26℃',
-          title: '室内温度',
-          color: '#E74C3C'
-        });
-
-        EnvironmentItem({
-          icon: $r("app.media.ic_humidity"),
-          value: '55%',
-          title: '环境湿度',
-          color: '#3498DB'
-        });
-
-        EnvironmentItem({
-          icon: $r("app.media.ic_gas"),
-          value: '正常',
-          title: '燃气状态',
-          color: '#ff544539'
-        });
-      }
-      .padding(16)
-      .justifyContent(FlexAlign.SpaceEvenly);
-
-      List() {
-        ControlItem({
-          params: {
-            icon: $r("app.media.ic_camera"),
-            title: "安防摄像头",
-            status: "在线",
-            buttonText: "实时查看",
-            onAction: () => this.viewCamera()
-          }
-        });
-
-        ControlItem({
-          params: {
-            icon: $r("app.media.ac_icon"),
-            title: "空调控制",
-            status: "26℃ 制冷模式",
-            buttonText: "远程调节",
-            onAction: () => this.isAirConditionShow = true
-          }
-        });
-
-        ControlItem({
-          params: {
-            icon: $r("app.media.ic_feeder"),
-            title: "宠物喂食器",
-            status: "剩余量：65%",
-            buttonText: "立即投喂",
-            onAction: () => this.feedPet()
-          }
-        });
-      }
-      .borderRadius(16)
-      .margin(16)
-      .backgroundColor(Color.White)
-      .shadow({ radius: 8, color: '#00000010' });
+      .backgroundColor('#F8F9FA')
+      .height('100%');
 
       if (this.isAirConditionShow) {
         control_aircon({
@@ -327,8 +333,7 @@ struct leaving_scene {
         });
       }
     }
-    .backgroundColor('#F8F9FA')
-    .height('100%');
+
   }
 
   private viewCamera(): void {

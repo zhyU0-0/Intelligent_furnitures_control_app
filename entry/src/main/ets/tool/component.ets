@@ -899,7 +899,6 @@ struct mySliber{
 
 }
 
-
 @Component
 export struct control_air_condition{
   @Link is_show:boolean
@@ -978,52 +977,77 @@ export struct air_condition{
   }
 }
 
-
 @Component
 struct control_curtain{
   @Link is_show:boolean
   @Link arr_room:room[]
+  @State curtain_List:Furniture[] = []
 
   aboutToAppear(): void {
+    for (let r of this.arr_room){
+      let _exist = false
+      let fan_ = new Furniture('',0,0)
+      for (let f of r.furniture_s){
+        if(f.type_id>3999&&f.type_id<5000){
+          _exist = true
+          fan_ = f
+        }
+      }
+      this.curtain_List.push(fan_)
 
+    }
   }
+
   build() {
     Column(){
-      Button().onClick(()=>{this.is_show = false})
-      Tabs(){
-        ForEach(this.arr_room,(item:room)=>{
-          TabContent(){
-            Column(){
-              Text(item.name)
-              List(){
-                ForEach(item.furniture_s,(item:Furniture)=>{
-                  if(item.type_id>1999&&item.type_id<3000){
-                    ListItem(){
-                      Row(){
-                        Text(item.name)
-                        Toggle({ type: ToggleType.Switch, isOn:item.switch? true:false })
-                          .onClick(() => {
-                            if (!item.switch) {
-                              item.switch = 1
-                              _IoTad.set_curtain_by_id("on")
-                            } else {
-                              item.switch = 0
-                              _IoTad.set_curtain_by_id("off")
-                            }
-                          })
-                      }.backgroundColor(Color.White).width("100%").padding(10)
+      Button("返回").onClick(()=>{this.is_show = false})
+        .onClick(() => this.is_show = false)
+        .padding(10)
+        .backgroundColor(Color.White)
+        .borderWidth(2)
+        .borderColor('#6d9cee')
+        .fontColor('#6d9cee')
+        .margin(10);
+      if(this.arr_room[0].name != 'null'){
+        List(){
+          ForEach(this.arr_room,(item:room,index)=>{
+            ListItem(){
+              Row(){
+                Text(item.name)
+                Toggle({ type: ToggleType.Switch, isOn:this.curtain_List[index].switch?true:false})
+                  .onClick(async ()=>{
+                    if(this.curtain_List[index].switch){
+                      this.curtain_List[index] = new Furniture(this.curtain_List[index].name,0,this.curtain_List[index].type_id)
+                      _IoTad.set_curtain_by_id("off")
+                    }else{
+                      this.curtain_List[index] = new Furniture(this.curtain_List[index].name,1,this.curtain_List[index].type_id)
+                      _IoTad.set_curtain_by_id("on")
                     }
-                  }
+
+                  })
+              }.width(320).padding(20).borderRadius(15).margin(20).justifyContent(FlexAlign.SpaceAround)
+              .backgroundColor(
+                index % 3 === 0? '#ffffe1f9' :
+                  index % 3 === 1? '#ffece6fa' :
+                    '#ffe0ebff'
+              )
+              .shadow({
+                radius: 5,
+                offsetX: 20,
+                offsetY: 20,
+                color: "#a8474545"
+              });
+            }
+          })
+        }.lanes(1)
+      }else{
+        Text("还没有房间哦")
+      }
 
 
-                })
-              }.lanes(2)
-            }.backgroundColor(Color.Pink)
-          }.tabBar(item.name)
-        })
-      }.height("30%").vertical(true)
-    }.backgroundColor(Color.White)
-    .width("100%").height("100%")
+    }.backgroundColor( '#e0efff')
+    .width("100%").height("100%");
+
   }
 }
 
@@ -1031,45 +1055,73 @@ struct control_curtain{
 struct control_fan{
   @Link is_show:boolean
   @Link arr_room:room[]
+  @State fan_List:Furniture[] = []
 
   aboutToAppear(): void {
+    for (let r of this.arr_room){
+      let _exist = false
+      let fan_ = new Furniture('',0,0)
+      for (let f of r.furniture_s){
+        if(f.type_id>3999&&f.type_id<5000){
+          _exist = true
+          fan_ = f
+        }
+      }
+      this.fan_List.push(fan_)
 
+    }
   }
+
   build() {
     Column(){
-      Button().onClick(()=>{this.is_show = false})
-      Tabs(){
-        ForEach(this.arr_room,(item:room)=>{
-          TabContent(){
-            Column(){
-              Text(item.name)
-              List(){
-                ForEach(item.furniture_s,(item:Furniture)=>{
-                  if(item.type_id>3999&&item.type_id<5000){
-                    ListItem(){
-                      Row(){
-                        Text(item.name)
-                        Toggle({ type: ToggleType.Switch, isOn:item.switch? true:false })
-                          .onClick(() => {
-                            if (!item.switch) {
-                              item.switch = 1
-                              _IoTad.set_fan_by_id("on")
-                            } else {
-                              item.switch = 0
-                              _IoTad.set_fan_by_id("off")
-                            }
-                          })
-                      }.backgroundColor(Color.White).width("100%").padding(10)
+      Button("返回").onClick(()=>{this.is_show = false})
+        .onClick(() => this.is_show = false)
+        .padding(10)
+        .backgroundColor(Color.White)
+        .borderWidth(2)
+        .borderColor('#6d9cee')
+        .fontColor('#6d9cee')
+        .margin(10);
+      if(this.arr_room[0].name != 'null'){
+        List(){
+          ForEach(this.arr_room,(item:room,index)=>{
+            ListItem(){
+              Row(){
+                Text(item.name)
+                Toggle({ type: ToggleType.Switch, isOn:this.fan_List[index].switch?true:false})
+                  .onClick(async ()=>{
+                    if(this.fan_List[index].switch){
+                      this.fan_List[index] = new Furniture(this.fan_List[index].name,0,this.fan_List[index].type_id)
+                      _IoTad.set_fan_by_id("off")
+                    }else{
+                      this.fan_List[index] = new Furniture(this.fan_List[index].name,1,this.fan_List[index].type_id)
+                      _IoTad.set_fan_by_id("on")
                     }
-                  }
-                })
-              }.lanes(2)
-            }.backgroundColor(Color.Pink)
-          }.tabBar(item.name)
-        })
-      }.height("30%").vertical(true)
-    }.backgroundColor(Color.White)
-    .width("100%").height("100%")
+
+                  })
+              }.width(320).padding(20).borderRadius(15).margin(20).justifyContent(FlexAlign.SpaceAround)
+              .backgroundColor(
+                index % 3 === 0? '#ffffe1f9' :
+                  index % 3 === 1? '#ffece6fa' :
+                    '#ffe0ebff'
+              )
+              .shadow({
+                radius: 5,
+                offsetX: 20,
+                offsetY: 20,
+                color: "#a8474545"
+              });
+            }
+          })
+        }.lanes(1)
+      }else{
+        Text("还没有房间哦")
+      }
+
+
+    }.backgroundColor( '#e0efff')
+    .width("100%").height("100%");
+
   }
 }
 
@@ -1228,7 +1280,6 @@ export struct my_DeepSeek{
         })
       Column(){
         List() {
-
           ForEach(this.TextList,(item:string,value)=>{
             ListItem(){
               if(value%2 == 0){
@@ -1240,7 +1291,6 @@ export struct my_DeepSeek{
                       .backgroundColor(Color.Blue)
                       .borderRadius(10)
                       .padding(10)
-
                     Column()
                       .width(10)
                     Column()//我的头像
