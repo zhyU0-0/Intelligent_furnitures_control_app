@@ -258,8 +258,8 @@ export struct add_furniture_page {
             y:100
           })
         Button('完成')
-          .backgroundImage($r('app.media.bottom_bg2'))
-          .backgroundImageSize(ImageSize.Cover)
+          .backgroundColor('#00ffffff')
+          .fontColor("#ff2f2f2f")
           .onClick(async () => {
             if (this.fur_name != ''&&this.type != 0) {
               //数据库
@@ -332,8 +332,8 @@ export struct add_room_page {
           })
         Row(){
           Button('完成')
-            .backgroundImage($r('app.media.bottom_bg2'))
-            .backgroundImageSize(ImageSize.Cover)
+            .backgroundColor('#00ffffff')
+            .fontColor("#ff2f2f2f")
             .onClick(async () => {
               if (this.fur_name != '') {
                 let success = await Room_db.insertRoom(new room(this.fur_name, []))
@@ -353,6 +353,8 @@ export struct add_room_page {
             .padding(5)
             .width(100)
           Button('返回')
+            .backgroundColor('#00ffffff')
+            .fontColor("#ff2f2f2f")
             .onClick(() => {
               this.is_show = false
             })
@@ -366,7 +368,7 @@ export struct add_room_page {
       .height("55%")
       .width('100%')
       .borderRadius(20)
-      .backgroundImage($r('app.media.bottom_bg1'))
+      .backgroundImage($r('app.media.bottom_bg4'))
       .backgroundImageSize(ImageSize.Cover)
       .justifyContent(FlexAlign.End);
     }
@@ -494,7 +496,7 @@ export struct myList {
           .width("90%")
           .padding(10)
           .margin(12)
-          .backgroundColor("#ffb6e7ff")
+          .backgroundColor("#cbb6c3f5")
           .borderRadius(20);
         }
       }
@@ -580,7 +582,7 @@ export struct myRow {
         .width("100%")
         .margin(2)
         .padding(10)
-        .backgroundImage(this.item1.switch?$r('app.media.furniture_bg2') :$r('app.media.furniture_bg'))
+        .backgroundImage(this.item1.switch?$r('app.media.furniture_bg2') :$r('app.media.lights_bg'))
         .backgroundImageSize(ImageSize.Cover)
         .borderRadius(20)
         .borderWidth(2)
@@ -602,7 +604,7 @@ export struct myRow {
         .width("100%")
         .margin(2)
         .padding(10)
-        .backgroundImage(this.item1.switch?$r('app.media.furniture_bg2') :$r('app.media.furniture_bg'))
+        .backgroundImage(this.item1.switch?$r('app.media.furniture_bg2') :$r('app.media.lights_bg'))
         .backgroundImageSize(ImageSize.Cover)
         .borderRadius(20)
         .borderWidth(2)
@@ -1043,7 +1045,7 @@ struct control_fan{
               Text(item.name)
               List(){
                 ForEach(item.furniture_s,(item:Furniture)=>{
-                  if(item.type_id>5999&&item.type_id<7000){
+                  if(item.type_id>3999&&item.type_id<5000){
                     ListItem(){
                       Row(){
                         Text(item.name)

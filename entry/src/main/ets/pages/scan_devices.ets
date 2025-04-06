@@ -42,9 +42,6 @@ struct Scan_devices {
       console.error(`requestEnableNotification failed, code is ${err}`);
     });
 
-
-
-
   }
 
 
@@ -71,8 +68,8 @@ struct Scan_devices {
     .backgroundImageSize(ImageSize.Cover)
     .height('100%')
     .width('100%')
-    .onClick(() => {
-      this.locals.setDate("is_scan",true)
+    .onClick(async () => {
+      await this.locals.setDate("is_scan",true)
       router.replaceUrl({
         url:"pages/Index"
       })

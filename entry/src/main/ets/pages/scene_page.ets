@@ -1,223 +1,411 @@
-import { Furniture, room } from "../tool/classes"
-import { control_aircon, control_air_condition } from "../tool/component"
-import { _IoTad } from "./scan_devices"
+import { Furniture, room } from "../tool/classes";
+import { control_aircon } from "../tool/component";
+import { _IoTad } from "./scan_devices";
 
-
-@Component
-export struct scene{
-
-  @Link arr_room:room[]
-  @State List_scene:string[] = ["睡眠模式","离家模式","娱乐模式"]
-  @State is_show_sleep:boolean = false
-  @State is_show_leaving:boolean = false
-  @State this_scene:string = ''
-  @State _height:string = "0%"
-
-  build() {
-    Stack(){
-      List(){
-        ForEach(this.List_scene,(item:string,value)=>{
-          ListItem(){
-            Row(){
-              Text(item)
-            }.padding(10).width('100%').height("100%").backgroundColor(Color.White)
-            .onClick(()=>{
-              this.this_scene = item
-              if(value == 0){
-                this.is_show_sleep = true
-                animateTo({duration:500},()=>{
-                  this._height = "100%"
-                })
-              }else if(value == 1){
-                this.is_show_leaving = true
-                animateTo({duration:500},()=>{
-                  this._height = "100%"
-                })
-              }
-
-
-            })
-          }.width("100%").height("20%").padding(10).backgroundColor(value%2?Color.Pink:Color.Orange)
-          ListItem().height(10)
-        })
-
-
-
-      }
-      if(this.is_show_sleep){
-        scenes({
-          scene:this.this_scene,
-          arr_room:this.arr_room,
-          _height:this._height,
-          is_show:this.is_show_sleep
-        })
-      }
-      if(this.is_show_leaving){
-        leaving_scene({
-          arr_room:this.arr_room,
-          _height:this._height,
-          is_show:this.is_show_leaving
-        })
-      }
-    }
-  }
+interface EnvironmentItemParams {
+  icon: Resource;
+  value: string;
+  title: string;
+  color?: string;
+  onAction?: () => void;
+}
+type DescMap = Record<string, string>;
+interface ControlItemParams {
+  icon: Resource;
+  title: string;
+  status: string;
+  buttonText: string;
+  onAction: () => void;
 }
 
 @Component
-struct scenes{
-  @Link scene:string
-  @Link arr_room:room[]
-  @Link _height:string
-  @Link is_show:boolean
-  @State List_f:Furniture[] = []
-  @State is_open:boolean = false
-  aboutToAppear(): void {
-    for(let r of this.arr_room){
-      for(let f of r.furniture_s){
-        if(f.type_id>999&&f.type_id<3000){
-          this.List_f.push(f)
+export struct scene {
+  @Link arr_room: room[];
+  @State sceneList: string[] = ["睡眠模式", "离家模式", "娱乐模式"];
+  @State isSleepSceneShow: boolean = false;
+  @State isLeavingSceneShow: boolean = false;
+  @State currentScene: string = '';
+  @State panelHeight: string = "0%";
+
+  build(): void {
+    Stack() {
+      Image($r('app.media.bottom_bg1'))
+        .objectFit(ImageFit.Cover)
+
+      List() {
+        ForEach(this.sceneList, (sceneName: string, index: number) => {
+          ListItem() {
+            Column() {
+              Image(this.getSceneIcon(index))
+                .width(48)
+                .height(48)
+                .margin({ bottom: 8 });
+
+              Text(sceneName)
+                .fontSize(18)
+                .fontColor('#2C3E50')
+                .fontWeight(FontWeight.Medium);
+
+              Text(this.getSceneDescription(sceneName))
+                .fontSize(12)
+                .fontColor('#7F8C8D')
+                .margin({ top: 4 });
+            }
+            .padding(20)
+            .backgroundColor(Color.White)
+            .borderRadius(16)
+            .shadow({ radius: 8, color: '#00000010', offsetX: 2, offsetY: 4 })
+            .width('100%')
+            .onClick(() => this.handleSceneClick(index));
+          }
+          .margin({ top: 8, bottom: 8 })
+          .key(index.toString());
+        }, (sceneName: string, index: number) => index.toString());
+      }
+      .width('90%')
+      .alignListItem(ListItemAlign.Center)
+      .edgeEffect(EdgeEffect.None);
+
+      if (this.isSleepSceneShow || this.isLeavingSceneShow) {
+        Column() {
+          Blank()
+            .onClick(() => this.closeScenePanels())
+            .backgroundColor('#00000030');
+
+          if (this.isSleepSceneShow) {
+            scenes({
+              scene: this.currentScene,
+              arr_room: this.arr_room,
+              is_show: this.isSleepSceneShow,
+              _height: this.panelHeight
+            })
+              .transition(TransitionEffect.translate({ y: 1000 }).animation({ duration: 300 }));
+          }
+
+          if (this.isLeavingSceneShow) {
+            leaving_scene({
+              arr_room: this.arr_room,
+              is_show: this.isLeavingSceneShow,
+              _height: this.panelHeight
+            })
+              .transition(TransitionEffect.translate({ y: 1000 }).animation({ duration: 300 }));
+          }
         }
       }
     }
+    .height('100%');
   }
-  build() {
-    Stack(){
-        Column(){
-          Row(){
-            Text(this.scene)
-            Row().width("50%")
-            Button("返回").onClick(()=>{
-              this.is_show = false
-              this._height = "0%"
-              this.is_open = false
-            })
-            Button(this.is_open?"关闭":"开启")
-              .onClick(()=>{
-                /*for(let r of this.arr_room){
-                  for(let f of r.furniture_s){
-                    if(f.type_id>999&&f.type_id<3000){
-                      f.switch = 0
-                    }
-                  }
-                }*/
-                console.log("L:::1")
-                let L:Furniture[] = []
-                for (let i of this.List_f){
-                  i.switch = 0
-                  L.push(i)
-                }
-                console.log("L:::2")
-                this.List_f = L
-                this.is_open = !this.is_open
-                console.log("L:::3"+this.is_open+JSON.stringify(this.List_f))
-              })
-          }
-              .width("100%").height("20%").backgroundColor(Color.White)
-          List(){
-            ForEach(this.List_f,(item:Furniture,value)=>{
-              ListItem(){
-                Row_s({item:item})
-              }
-              ListItem().height(10)
-            })
-          }.padding(10)
-        }.width("100%").height(this._height).backgroundColor(Color.White)
-        .backgroundColor(Color.Pink)
-    }
+
+  private handleSceneClick(index: number): void {
+    this.currentScene = this.sceneList[index];
+    animateTo({ duration: 300 }, () => {
+      this.panelHeight = "100%";
+      if (index === 0) this.isSleepSceneShow = true;
+      if (index === 1) this.isLeavingSceneShow = true;
+    });
+  }
+
+  private closeScenePanels(): void {
+    animateTo({ duration: 300 }, () => {
+      this.panelHeight = "0%";
+      this.isSleepSceneShow = false;
+      this.isLeavingSceneShow = false;
+    });
+  }
+
+  private getSceneIcon(index: number): Resource {
+    const icons = [
+      $r("app.media.ic_bedtime"),
+      $r("app.media.home"),
+      $r("app.media.ic_entertainment")
+    ];
+    return icons[index];
+  }
+
+  private getSceneDescription(scene: string): string {
+    const descriptionMap: DescMap = {
+      "睡眠模式": "关闭灯光，调节空调至适宜睡眠温度",
+      "离家模式": "关闭所有设备，启动安防监控系统",
+      "娱乐模式": "调暗灯光，准备影音娱乐环境"
+    };
+    return descriptionMap[scene] || '';
   }
 }
 
 @Component
-struct Row_s{
-  @Prop item:Furniture
-  build() {
-    Row(){
-      Text(this.item.name).fontSize(20).width("20%")
-      Row().width("60%")
-      Toggle({ type: ToggleType.Switch, isOn:this.item.switch? true:false })
-        .onClick(() => {
-          if (!this.item.switch) {
-            this.item.switch = 1
-            _IoTad.set_curtain_by_id("on")
-          } else {
-            this.item.switch = 0
-            _IoTad.set_curtain_by_id("off")
-          }
-        })
-    }.width("95%").height("15%").borderRadius(5).backgroundColor(Color.White).padding(10)
+struct scenes {
+  @Link scene: string;
+  @Link arr_room: room[];
+  @Link is_show: boolean;
+  @Link _height: string;
+  @State furnitureList: Furniture[] = [];
+  @State isEnabled: boolean = false;
+
+  aboutToAppear(): void {
+    this.furnitureList = this.arr_room
+      .flatMap(r => r.furniture_s)
+      .filter(f => f.type_id > 999 && f.type_id < 3000);
   }
-}
+
+  build(): void {
+    Column() {
+      Row() {
+        Image($r("app.media.ic_back"))
+          .fillColor('#ff111141')
+          .width(24)
+          .height(24)
+          .onClick(() => this.closePanel());
 
 
+        Text(this.scene)
+          .fontSize(20)
+          .fontWeight(FontWeight.Bold)
+          .layoutWeight(1)
+          .textAlign(TextAlign.Center);
 
-@Component
-struct leaving_scene{
-  @Link arr_room:room[]
-  @Link _height:string
-  @Link is_show:boolean
-  @State is_show_air_condition:boolean = false
-
-  build() {
-    Stack(){
-      Column(){
-        Row() {
-          Column(){
-            Text("温度")
-            Text("燃气")
-            Text("湿度")
-          }
-          Row().width("50%")
-          Button("返回")
-            .onClick(()=>{
-              this.is_show = false
-              this._height = "0%"
-
-            })
-        }.width("100%").height("35%")
-        List(){
-          ListItem(){
-            Row(){
-              Text("摄像头").width("20%")
-              Row().width("60%")
-              Button("查看")
-                .onClick(()=>{
-                  //看摄像头
-                })
-            }.width("95%").height("15%").borderRadius(5).backgroundColor(Color.White).padding(10)
-          }
-          ListItem().height(10)
-          ListItem(){
-            Row(){
-              Text("空调").width("20%")
-              Row().width("60%")
-              Button("控制")
-                .onClick(()=>{
-                  //远程控制空调
-                  this.is_show_air_condition = true
-                })
-            }.width("95%").height("15%").borderRadius(5).backgroundColor(Color.White).padding(10)
-          }
-          ListItem().height(10)
-          ListItem(){
-            Row(){
-              Text("宠物喂食器").width("20%")
-              Row().width("60%")
-              Button("控制")
-                .onClick(()=>{
-                  //控制宠物喂食器
-                })
-            }.width("95%").height("15%").borderRadius(5).backgroundColor(Color.White).padding(10)
-          }
-          ListItem().height(10)
-        }.height("70%")
-        .backgroundColor(Color.Pink).borderRadius(10).padding(10)
-
-      }.width("100%").height(this._height).backgroundColor(Color.White)
-      if(this.is_show_air_condition){
-        control_aircon({is_show:this.is_show_air_condition,arr_room:this.arr_room})
+        Text(this.isEnabled ? "已启用" : "已关闭")
+          .fontColor(this.isEnabled ? '#27AE60' : '#E74C3C')
+          .onClick(()=>{
+            this.isEnabled = !this.isEnabled
+          })
       }
+      .padding(16)
+      .backgroundColor('#ffaaabff')
+      .backdropBlur(10);
 
+      Grid() {
+        ForEach(this.furnitureList, (item: Furniture,value) => {
+          GridItem() {
+            Column() {
+              Stack() {
+                Circle()
+                  .width(60)
+                  .height(60)
+                  .fill(item.switch ? '#3498DB30' : '#BDC3C730');
+
+                Image(this.getDeviceIcon(item.type_id))
+                  .width(30)
+                  .height(30);
+              }
+
+              Text(item.name)
+                .fontSize(14)
+                .margin({ top: 8 })
+                .textAlign(TextAlign.Center);
+
+              Text(item.switch ? "已开启" : "已关闭")
+                .fontSize(12)
+                .fontColor(item.switch ? '#27AE60' : '#95A5A6');
+            }
+            .padding(12)
+            .backgroundColor(Color.White)
+            .borderRadius(12)
+            .shadow({ radius: 4, color: '#00000010' })
+            .onClick(() => {
+              let f = this.toggleDevice(item)
+              this.furnitureList[value] = f;
+            });
+          }
+        });
+      }
+      .columnsTemplate('1fr 1fr 1fr')
+      .rowsGap(12)
+      .columnsGap(12)
+      .padding(16)
+      .layoutWeight(1);
     }
+    .backgroundColor('#F8F9FA')
+    .height('100%');
+  }
 
+  private toggleDevice(item: Furniture): Furniture {
+    item.switch = item.switch ? 0 : 1;
+    _IoTad.set_curtain_by_id(item.switch ? "on" : "off");
+    return new Furniture(item.name,item.switch,item.type_id)
+  }
+
+  private closePanel(): void {
+    this.is_show = false;
+    this._height = "0%";
+  }
+
+  private getDeviceIcon(typeId: number): Resource {
+    return typeId < 2000 ? $r("app.media.light") : $r("app.media.curtain");
+  }
+}
+
+@Component
+struct leaving_scene {
+  @Link arr_room: room[];
+  @Link is_show: boolean;
+  @Link _height: string;
+  @State isAirConditionShow: boolean = false;
+
+  build(): void {
+    Column() {
+      Row() {
+        Image($r("app.media.ic_back"))
+          .fillColor('#ff111141')
+          .width(24)
+          .height(24)
+          .onClick(() => this.closePanel());
+        Text("离家模式")
+          .fontSize(20)
+          .fontWeight(FontWeight.Bold)
+          .layoutWeight(1)
+          .textAlign(TextAlign.Center);
+      }
+      .padding(16)
+      .backgroundColor('#ffaaabff')
+      .backdropBlur(10);
+
+      Row() {
+        EnvironmentItem({
+          icon: $r("app.media.ic_temp"),
+          value: '26℃',
+          title: '室内温度',
+          color: '#E74C3C'
+        });
+
+        EnvironmentItem({
+          icon: $r("app.media.ic_humidity"),
+          value: '55%',
+          title: '环境湿度',
+          color: '#3498DB'
+        });
+
+        EnvironmentItem({
+          icon: $r("app.media.ic_gas"),
+          value: '正常',
+          title: '燃气状态',
+          color: '#ff544539'
+        });
+      }
+      .padding(16)
+      .justifyContent(FlexAlign.SpaceEvenly);
+
+      List() {
+        ControlItem({
+          params: {
+            icon: $r("app.media.ic_camera"),
+            title: "安防摄像头",
+            status: "在线",
+            buttonText: "实时查看",
+            onAction: () => this.viewCamera()
+          }
+        });
+
+        ControlItem({
+          params: {
+            icon: $r("app.media.ac_icon"),
+            title: "空调控制",
+            status: "26℃ 制冷模式",
+            buttonText: "远程调节",
+            onAction: () => this.isAirConditionShow = true
+          }
+        });
+
+        ControlItem({
+          params: {
+            icon: $r("app.media.ic_feeder"),
+            title: "宠物喂食器",
+            status: "剩余量：65%",
+            buttonText: "立即投喂",
+            onAction: () => this.feedPet()
+          }
+        });
+      }
+      .borderRadius(16)
+      .margin(16)
+      .backgroundColor(Color.White)
+      .shadow({ radius: 8, color: '#00000010' });
+
+      if (this.isAirConditionShow) {
+        control_aircon({
+          is_show: this.isAirConditionShow,
+          arr_room: this.arr_room
+        });
+      }
+    }
+    .backgroundColor('#F8F9FA')
+    .height('100%');
+  }
+
+  private viewCamera(): void {
+    // 查看摄像头逻辑
+  }
+
+  private feedPet(): void {
+    // 宠物喂食逻辑
+  }
+
+  private closePanel(): void {
+    this.is_show = false;
+    this._height = "0%";
+  }
+}
+
+@Component
+struct EnvironmentItem {
+  @Prop icon: Resource;
+  @Prop value: string;
+  @Prop title: string;
+  @Prop color: string = '#ffaaabff';
+
+  build(): void {
+    Column() {
+      Image(this.icon)
+        .width(40)
+        .height(40)
+        .fillColor(this.color);
+
+      Text(this.value)
+        .fontSize(20)
+        .fontColor(this.color)
+        .margin({ top: 8 })
+        .fontWeight(FontWeight.Medium);
+
+      Text(this.title)
+        .fontSize(12)
+        .fontColor('#7F8C8D');
+    }
+    .padding(16)
+    .backgroundColor(Color.White)
+    .borderRadius(12)
+    .shadow({ radius: 4, color: '#00000010' });
+  }
+}
+
+@Component
+struct ControlItem {
+  @Prop params: ControlItemParams;
+
+  build(): void {
+    Row() {
+      Image(this.params.icon)
+        .width(32)
+        .height(32)
+        .margin({ right: 16 });
+
+      Column() {
+        Text(this.params.title)
+          .fontSize(16)
+          .fontColor('#2C3E50');
+        Text(this.params.status)
+          .fontSize(12)
+          .fontColor('#7F8C8D');
+      }
+      .layoutWeight(1);
+
+      Button(this.params.buttonText)
+        .type(ButtonType.Normal)
+        .backgroundColor('#ffaaabff')
+        .fontColor(Color.White)
+        .borderRadius(20)
+        .padding({ left: 16, right: 16 })
+        .onClick(this.params.onAction);
+    }
+    .padding(16)
+    .width('100%');
   }
 }
