@@ -102,7 +102,7 @@ export struct furniture_long {
               this.Light_number = value
               console.log("LL:"+this.Light_number.toString())
               this.is_chang = !this.is_chang
-              _IoTad.set_LED_brightness_by_id(value*100)
+              _IoTad.set_LED_brightness_by_id(value*1000)
               this.o_f = this.arr_f[this.index_f]
 
               //udp.sendLED_chang(value)
@@ -813,7 +813,7 @@ struct control_lights{
         .fontColor('#6d9cee')
         .margin(10);
 
-      if(this.arr_room[0].name != 'null'||this.arr_room.length == 0){
+      if(this.arr_room.length != 0){
         List(){
           ForEach(this.arr_room,(item:room,index)=>{
             ListItem(){
@@ -887,7 +887,7 @@ struct mySliber{
             }
           }
           this.bulbColor = this.calculateBulbColor(this.lighting)
-          _IoTad.set_LED_brightness_by_id(value*100)
+          _IoTad.set_LED_brightness_by_id(value*1000)
 
         })
         .width(200)
@@ -914,83 +914,8 @@ struct mySliber{
 
 }
 
-@Component
-export struct control_air_condition{
-  @Link is_show:boolean
-  @Link arr_room:room[]
-
-  aboutToAppear(): void {
 
 
-  }
-  build() {
-    Column(){
-      Button().onClick(()=>{this.is_show = false})
-        Tabs(){
-          ForEach(this.arr_room,(item:room)=>{
-            TabContent(){
-              air_condition({item:item})
-            }.tabBar(item.name)
-          })
-        }
-
-
-    }.backgroundColor(Color.White)
-    .width("100%").height("100%")
-  }
-}
-@Component
-export struct air_condition{
-  @Prop item :room
-  @State ex_a_c:boolean = false
-  @State is_show_add:boolean = false
-  @State _height:string = "0%"
-  aboutToAppear(): void {
-      for(let f of this.item.furniture_s){
-        if(f.type_id>2999&&f.type_id<4000){
-          this.ex_a_c = true
-        }
-      }
-  }
-  build() {
-
-    Stack(){
-      Column(){
-        if(this.ex_a_c){
-          Image($r("app.media.button1")).width(100).height(100)
-          Text("温度："+this.item.get_air_condition().temp)
-          Button("除湿")
-            .onClick(()=>{
-              //开启除湿模式
-            })
-        }else {
-          Text("该房间还没有录入空调哦")
-          Button("前往录入")
-            .onClick(async ()=>{
-              //录入逻辑
-              new_f_R_Id = await Room_db.getRoomsIdByName(this.item.name)
-              this.is_show_add = true
-              animateTo({duration:200},()=>{
-                this._height = "100%"
-              })
-
-            })
-        }
-      }
-      if(this.is_show_add){
-        add_furniture_page({
-          arr:[],
-          is_show:this.is_show_add,
-
-          _height:this._height
-        })
-      }
-
-
-
-    }
-  }
-}
 
 @Component
 struct control_curtain{
@@ -1023,13 +948,13 @@ struct control_curtain{
         .borderColor('#6d9cee')
         .fontColor('#6d9cee')
         .margin(10);
-      if(this.arr_room[0].name != 'null'){
+      if(this.arr_room.length != 0){
         List(){
           ForEach(this.arr_room,(item:room,index)=>{
             ListItem(){
               Row(){
-                Text(item.name)
-                Toggle({ type: ToggleType.Switch, isOn:this.curtain_List[index].switch?true:false})
+                Text(item?.name)
+                Toggle({ type: ToggleType.Switch, isOn:this.curtain_List[index]?.switch?true:false})
                   .onClick(async ()=>{
                     if(this.curtain_List[index].switch){
                       this.curtain_List[index] = new Furniture(this.curtain_List[index].name,0,this.curtain_List[index].type_id)
@@ -1410,6 +1335,17 @@ export struct my_airCon_edit{
   }
   aboutToAppear(): void {
     this.tempSetting = this.item.temp
+    if(this.item.mode == "zd"){
+      this.selectedMode = "auto"
+    }else if(this.item.mode == 'zr'){
+      this.selectedMode = "heat"
+    }else if(this.item.mode == 'zl'){
+      this.selectedMode = "cool"
+    }else if(this.item.mode == 'cs'){
+      this.selectedMode = "dry"
+    }else{
+      this.selectedMode = "auto"
+    }
   }
 
   build() {
@@ -1540,6 +1476,18 @@ export struct control_aircon {
       for(let f of r.furniture_s){
         if(f.type_id>=3000&&f.type_id<4000){
           this.tempSetting = f.temp
+          this.tempSetting = f.temp
+          if(f.mode == "zd"){
+            this.selectedMode = "auto"
+          }else if(f.mode == 'zr'){
+            this.selectedMode = "heat"
+          }else if(f.mode == 'zl'){
+            this.selectedMode = "cool"
+          }else if(f.mode == 'cs'){
+            this.selectedMode = "dry"
+          }else{
+            this.selectedMode = "auto"
+          }
           this.is_exist = true
           _is_e = true
           if(f.switch == 1){
@@ -1711,6 +1659,7 @@ export struct control_aircon {
           .borderWidth(2)
           .borderColor('#6d9cee')
           .fontColor('#6d9cee')
+          .onClick(()=>this.is_show = false)
       }
     }
     }
@@ -1759,4 +1708,7 @@ function set_furniture(item:Furniture,command_on_off_number:string){
 
   }
 
+}
+async function renew_data(){
+  await _IoTad.get_data()
 }

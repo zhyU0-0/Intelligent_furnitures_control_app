@@ -107,7 +107,7 @@ struct homepage{
 
     setTimeout(async ()=>{
       let room:room[] = await Room_db.getAllRooms()
-      if(room[0].name=="null"){
+      if(room.length == 0){
         AlertDialog.show({message:"还没有家居哦，快去录入吧~"})
       }
         for (let item of await Room_db.getAllRooms()) {
@@ -135,7 +135,6 @@ struct homepage{
         }
       },1000)*/
     },100)
-    //setTimeout(()=>{ this.udp_send()},1000)
   }
   async judge(temp?:number,humi?:number,smoke?:number){
     let title:string = ''
@@ -241,7 +240,7 @@ struct homepage{
   }
   //{"temperature":16,"humidity":0,"smoke":0,"motion_state":1,"door_state":0,"brightness":500,"1001":1,"1102":1,"2001":0,"3001_2":0,"4001":0,"3001_1":0,"3001_3":0}
   async new_analyze_data(data:string){
-    data = "{\"temperature\":16,\"humidity\":0,\"smoke\":0,\"motion_state\":1,\"door_state\":0,\"brightness\":500,\"1001\":1,\"1102\":1,\"2001\":1,\"3001_2\":22,\"4001\":1,\"3001_1\":1,\"3001_3\":\"zl\"}"
+    data = "{\"temperature\":16,\"humidity\":0,\"smoke\":0,\"motion_state\":1,\"door_state\":0,\"brightness\":3000,\"1001\":1,\"1102\":1,\"2001\":1,\"3001_2\":22,\"4001\":1,\"3001\":1,\"3001_3\":\"zl\"}"
     let arr:string[] = data.split("/")
     for(let item of arr){
       console.log("IoTad data:"+item)
@@ -264,7 +263,7 @@ struct homepage{
 
               }else if(f.type_id<1999){
                 f = new Furniture(f.name,values?.[f.type_id.toString()],f.type_id)
-                f.lighting = (values?.["brightness"])/100
+                f.lighting = (values?.["brightness"])/1000
 
               }else if(f.type_id<2999){
                 f = new Furniture(f.name,values?.[f.type_id.toString()],f.type_id)
@@ -278,19 +277,6 @@ struct homepage{
               }else{
                 f = new Furniture(f.name,values?.[f.type_id.toString()],f.type_id)
               }
-              /*if(typeof new_v?.["lighting"] != "undefined") {
-                f = new Furniture(f.name,values?.["switch"],values?.["id"])
-                f.lighting = values?.["lighting"]
-                console.log("udp send t"+f.switch+"::"+f.lighting+'::'+f.type_id)
-              }else if(typeof values?.["a_temp"] != "undefined"){
-                f = new Furniture(f.name,values?.["switch"],values?.["id"])
-                f.temp = values?.["a_temp"]
-                f.is_dry = values?.["is_dry"]
-              }
-              else {
-                f = new Furniture(f.name,values?.["switch"],values?.["id"])
-                console.log("udp send t"+f.switch+"::"+f.type_id)
-              }*/
             }
             new_arr_f.push(f)
           }

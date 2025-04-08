@@ -96,7 +96,7 @@ export class RoomDatabase {
       const resultSet = await this.rdbStore?.query(predicates_room);
       console.log('Rooms queried successfully.');
       if (resultSet?.rowCount == 0) {
-        return [new room('null',[])]
+        return []
       }
 
       while (resultSet?.goToNextRow()) {
