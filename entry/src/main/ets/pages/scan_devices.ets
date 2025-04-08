@@ -22,7 +22,7 @@ struct Scan_devices {
     await _IoTad.init()
     if(await this.locals.getDate("is_scan")){
       router.replaceUrl({
-        url:"pages/Index"
+        url:"pages/Search_devices"
       })
       return
     }

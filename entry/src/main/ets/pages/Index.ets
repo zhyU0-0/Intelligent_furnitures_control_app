@@ -117,15 +117,18 @@ struct homepage{
 
       console.log("open_arr_room:"+JSON.stringify(this.arr_room))
 
-      setTimeout(async ()=>{
+      this.new_analyze_data("")
+      /*setTimeout(async ()=>{
 
         await tcp.getData()
         console.log("Tcp_get_data : "+Data_Tcp)
         this.analyze_data(Data_Tcp)
+        await _IoTad.get_data()
+        Data_Id_me = Data_id_yun
 
       },1000)
 
-      /*setInterval(async ()=>{
+      setInterval(async ()=>{
         if(Data_Id_me != Data_id_yun){
           DATA_IoTda = DATA_new
           await this.new_analyze_data(DATA_IoTda)
@@ -134,7 +137,7 @@ struct homepage{
     },100)
     //setTimeout(()=>{ this.udp_send()},1000)
   }
-  async judge(temp?:number,humi?:number){
+  async judge(temp?:number,humi?:number,smoke?:number){
     let title:string = ''
 
     if(temp != null){
@@ -160,6 +163,18 @@ struct homepage{
         this.is_warn = true
       }
       title = "湿度过高"
+    }
+    if(smoke != null){
+      if(smoke>max_smoke) {
+        let paramInfo: Datamodel = {
+          type: "smoke",
+          data: smoke,
+          arr: await Room_db.getAllRooms()
+        }
+        this.warn_data = paramInfo
+        this.is_warn = true
+      }
+      title = "烟雾浓度过高"
     }
 
       let notificationRequest: notificationManager.NotificationRequest = {
@@ -224,13 +239,13 @@ struct homepage{
 
     }
   }
-//{"temperature":0,"humidity":0,"smoke":2148,"motion_state":0,"1001_1":0,"1001_2":5000,"3001_1":1,"3001_3":24,"3001_4":"zl"}}
+  //{"temperature":16,"humidity":0,"smoke":0,"motion_state":1,"door_state":0,"brightness":500,"1001":1,"1102":1,"2001":0,"3001_2":0,"4001":0,"3001_1":0,"3001_3":0}
   async new_analyze_data(data:string){
+    data = "{\"temperature\":16,\"humidity\":0,\"smoke\":0,\"motion_state\":1,\"door_state\":0,\"brightness\":500,\"1001\":1,\"1102\":1,\"2001\":1,\"3001_2\":22,\"4001\":1,\"3001_1\":1,\"3001_3\":\"zl\"}"
     let arr:string[] = data.split("/")
     for(let item of arr){
       console.log("IoTad data:"+item)
       let values:string = JSON.parse(item)
-      values = values?.['data']
       if(typeof values?.["temperature"] != "undefined") {
         this.temp = values?.["temperature"]
         this.humi = values?.["humidity"]
@@ -245,13 +260,23 @@ struct homepage{
               let new_v:string = values?.[f.type_id.toString()]
               new_v = JSON.parse(new_v)
               if(f.type_id<999){
+                f = new Furniture(f.name,values?.[f.type_id.toString()],f.type_id)
 
               }else if(f.type_id<1999){
+                f = new Furniture(f.name,values?.[f.type_id.toString()],f.type_id)
+                f.lighting = (values?.["brightness"])/100
 
               }else if(f.type_id<2999){
+                f = new Furniture(f.name,values?.[f.type_id.toString()],f.type_id)
 
-              }else if(f.type_id<3999){
-
+              }else if(f.type_id<3999&&f.type_id>3000){
+                console.log("air_condition:::"+JSON.stringify(f))
+                f = new Furniture(f.name,values?.[f.type_id.toString()],f.type_id)
+                f.temp = Number(values?.[f.type_id.toString()+"_2"])
+                f.mode = values?.[f.type_id.toString()+"_3"]
+                console.log("air_condition:::"+JSON.stringify(f))
+              }else{
+                f = new Furniture(f.name,values?.[f.type_id.toString()],f.type_id)
               }
               /*if(typeof new_v?.["lighting"] != "undefined") {
                 f = new Furniture(f.name,values?.["switch"],values?.["id"])
@@ -300,21 +325,54 @@ struct homepage{
       Row(){
         Stack(){
           Row(){
-            Column().width("15%")
+            Column().width("25%")
             Column(){
-              Text("温度：" + this.temp)
-                .fontSize(20)
-                .fontColor(this.is_sleep ?'transparent'  : '#6d9cee')
-                .margin({ bottom: 5 });
-              Text("湿度：" + this.humi)
-                .fontSize(18)
-                .fontColor(this.is_sleep ?'transparent'  : '#6d9cee')
-                .margin({ bottom: 5 });
-              Text("烟雾：" + this.smoke)
-                .fontSize(20)
-                .fontColor(this.is_sleep ?'transparent'  : '#6d9cee')
-                .margin({ bottom: 5 });
-            }.width("50%").height('100')
+              Row(){
+                Image($r("app.media._temp"))
+                  .fillColor('#6d9cee').width(25).height(25)
+                Text("温度：")
+                  .fontSize(15)
+                  .width(50)
+                  .fontColor( '#6d9cee')
+                  .margin({ bottom: 5 });
+                Text(this.temp.toString())
+                  .fontSize(15)
+                  .width(50)
+                  .fontColor( '#6d9cee')
+                  .margin({ bottom: 5 });
+              }
+              Row(){
+                Image($r("app.media._humi"))
+                  .fillColor('#6d9cee').width(25).height(25).size({width:20,height:20})
+                Text("湿度：")
+                  .fontSize(15)
+                  .width(50)
+                  .fontColor( '#6d9cee')
+                  .margin({ bottom: 5 });
+                Text(this.humi.toString())
+                  .fontSize(15)
+                  .width(50)
+                  .fontColor( '#6d9cee')
+                  .margin({ bottom: 5 });
+
+              }
+
+              Row(){
+                Image($r("app.media._smoke"))
+                  .fillColor('#6d9cee').width(25).height(25).size({width:20,height:20})
+                Text("烟雾：")
+                  .fontSize(15)
+                  .width(50)
+                  .fontColor( '#6d9cee')
+                  .margin({ bottom: 5 });
+                Text(this.smoke.toString())
+                  .fontSize(15)
+                  .width(50)
+                  .fontColor( '#6d9cee')
+                  .margin({ bottom: 5 });
+              }
+
+            }.width("50%").height('100').justifyContent(FlexAlign.SpaceAround)
             .onClick(()=>{
               //this.is_show_humidity = !this.is_show_humidity
               animateTo({duration:500},()=>{
@@ -680,6 +738,15 @@ struct Index {
 
 
       Button("AI")
+        .backgroundImage($r('app.media.ai_bg2'))
+        .backgroundImageSize(ImageSize.Cover)
+        .fontColor("#a8474545")
+        .shadow({
+          radius: 5,
+          offsetX: 12,
+          offsetY: 12,
+          color: "#a8474545"
+        })
         .onClick(()=>{
           this.is_show_AI = true
           animateTo({duration:500},()=>{

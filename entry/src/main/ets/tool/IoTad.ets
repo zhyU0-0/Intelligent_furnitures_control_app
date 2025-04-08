@@ -1,4 +1,5 @@
-
+import { BusinessError } from '@kit.BasicServicesKit';
+import { systemDateTime } from '@kit.BasicServicesKit';
 import http from '@ohos.net.http';
 // 定义常量
 const IAM_ENDPOINT = 'iam.myhuaweicloud.com'; // IAM 服务地址
@@ -227,11 +228,25 @@ export class IoTda{
       if (response.responseCode === 200) {
         console.log('Message sent successfully:', response.result.toString());
         let regex = /"response":(.*?)}}}/
-        let regex1 = /"command_id":(.*?),"response"/
+        let regex1 = /"data":(.*?)}}/
+        //{"result_code":0,"data":{"temperature":16,"humidity":0,"smoke":0,"motion_state":1,"door_state":0,"brightness":500,"1001":1,"1102":1,"2001":0,"3001_2":0,"4001":0,"3001_1":0,"3001_3":0}}
+        try {
+          let _time = systemDateTime.getTime(true)
+          console.log("Time::::"+_time)
+          Data_id_yun = _time.toString()
+        } catch(e) {
+          let error = e as BusinessError;
+          console.info(`Failed to get time. message: ${error.message}, code: ${error.code}`);
+        }
         console.log("Data::"+response.result)
+        //{"result_code":0,"data":{"temperature":16,"humidity":0,"smoke":0,"motion_state":1,"door_state":0,"brightness":500,"1001":1,"1102":1,"2001":0,"3001_2":0,"4001":0,"3001_1":0,"3001_3":0}}
         DATA_new = response.result.toString().match(regex)?.toString().split(",")[1]+"}"
-        Data_id_yun = response.result.toString().match(regex1)?.toString().split(",")[1]+"}"
+        //{"temperature":16,"humidity":0,"smoke":0,"motion_state":1,"door_state":0,"brightness":500,"1001":1,"1102":1,"2001":0,"3001_2":0,"4001":0,"3001_1":0,"3001_3":0}
+        DATA_new = DATA_new.match(regex1)?.toString().split(",")[1]+"}"
+
+        return "//{\"result_code\":0,\"data\":{\"temperature\":16,\"humidity\":0,\"smoke\":0,\"motion_state\":1,\"door_state\":0,\"brightness\":500,\"1001\":1,\"1102\":1,\"2001\":0,\"3001_2\":0,\"4001\":0,\"3001_1\":0,\"3001_3\":0}}"
         return response.result.toString().match(regex)?.toString().split(",")[1]+"}"
+
       } else {
         return -1
 
@@ -247,6 +262,7 @@ export class IoTda{
 
   async set_LED_brightness_by_id(brightness:number,LED_id?:number){
 
+    this.get_data()
     const httpRequest = http.createHttp();
     const url = `https://${IOTDA_ENDPOINT}/v5/iot/${PROJECT_ID}/devices/${this.DEVICE_ID}/commands`;
     const body :_body1_push_brightness = {
@@ -272,6 +288,7 @@ export class IoTda{
       console.log("Message sent::"+response.result)
       if (response.responseCode === 200) {
         console.log('Message sent successfully:', response.result.toString());
+
         return 1
       } else {
         return -1
@@ -312,6 +329,7 @@ export class IoTda{
       console.log("Message sent::"+response.result)
       if (response.responseCode === 200) {
         console.log('Message sent successfully:', response.result.toString());
+        await this.get_data()
         return 1
       } else {
         return -1
@@ -354,6 +372,7 @@ export class IoTda{
       console.log("Message sent::"+response.result)
       if (response.responseCode === 200) {
         console.log('Message sent successfully:', response.result.toString());
+        await this.get_data()
         return 1
       } else {
         return -1
@@ -394,6 +413,7 @@ export class IoTda{
       console.log("Message sent::"+response.result)
       if (response.responseCode === 200) {
         console.log('Message sent successfully:', response.result.toString());
+        await this.get_data()
         return 1
       } else {
         return -1

@@ -3,6 +3,7 @@ import { preferences } from '@kit.ArkData';
 import cryptoFramework from '@ohos.security.cryptoFramework';
 import common from '@ohos.app.ability.common';
 import util from '@ohos.util';
+import { systemDateTime } from '@kit.BasicServicesKit';
 
 @Entry
 @Component
@@ -18,11 +19,13 @@ struct NewPage {
   private userPreferences: preferences.Preferences | null = null;
 
   async aboutToAppear() {
+    let _time = systemDateTime.getTime(true)
+    console.log("Time::::"+_time)
     const context = getContext(this) as common.UIAbilityContext;
     this.userPreferences = await preferences.getPreferences(context, 'userData');
     const is_land =  await this.userPreferences.get("is_land",false)
     if(is_land){
-      router.replaceUrl({ url: "pages/Search_devices" });
+      router.replaceUrl({ url: "pages/scan_devices" });
     }
   }
 

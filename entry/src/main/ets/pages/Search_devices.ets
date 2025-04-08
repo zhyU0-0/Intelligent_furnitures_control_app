@@ -23,12 +23,13 @@ export struct search_device{
 
   @State local:LocalStoraga = new LocalStoraga("data")
   async aboutToAppear() {
+    await this.init()
     const is_search =  await this.local.getDate("is_search")
       if(is_search){
         router.replaceUrl({url:"pages/Index"})
         return
       }
-    await this.init()
+
   }
   build() {
     Stack() {

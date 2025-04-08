@@ -720,18 +720,32 @@ export struct displayRoom {
                   this.is_show_air_condition = true
                 })
                 ListItem() {
-                  Text("风扇控制")
-                    .fontColor('rgb(70, 100, 180)')
-                    .position({ y: 40, x: 35 });
+                  Stack(){
+                    Text("风扇控制")
+                      .fontColor('rgb(70, 100, 180)')
+                      .position({ y: 15, x: 5 });
+                    Image($r("app.media._fan"))
+                      .size({height:80,width:80})
+                      .position({x:5,y:40})
+                      .fillColor("#ff929292")
+                  }
                 }
-                .width(150).height(200).borderWidth(2).borderColor(Color.White).padding(10).margin({ top: 0, bottom: 40, left: 10, right: 10 })
-                .backgroundImage($r('app.media.ufo2'))
-                .backgroundImageSize(ImageSize.Cover)
+                .width(150).height(200).borderWidth(2).borderColor(Color.White).padding(10).margin({ top: 0, bottom: 40, left: 20, right: 10 })
+                .backgroundColor(Color.White)
                 .shadow({ radius: 5, offsetX: 10, offsetY: 10, color: "#939391" })
                 .borderRadius(10)
                 .onClick(() => {
                   this.is_show_fan = true
                 })
+                ListItem(){
+                  Text("+")
+                    .fontSize(200)
+                    .fontColor("#ff929292")
+                }
+                .shadow({ radius: 5, offsetX: 10, offsetY: 10, color: "#939391" })
+                .borderRadius(10)
+                .backgroundColor(Color.White)
+                .width(150).height(200).borderWidth(2).borderColor(Color.White).padding(10).margin({ top: 0, bottom: 40, left: 10, right: 10 })
               }.lanes(2)
               }
               if (this.is_show_lights) {
@@ -798,7 +812,8 @@ struct control_lights{
         .borderColor('#6d9cee')
         .fontColor('#6d9cee')
         .margin(10);
-      if(this.arr_room[0].name != 'null'){
+
+      if(this.arr_room[0].name != 'null'||this.arr_room.length == 0){
         List(){
           ForEach(this.arr_room,(item:room,index)=>{
             ListItem(){
@@ -1082,7 +1097,7 @@ struct control_fan{
         .borderColor('#6d9cee')
         .fontColor('#6d9cee')
         .margin(10);
-      if(this.arr_room[0].name != 'null'){
+      if(this.arr_room.length != 0){
         List(){
           ForEach(this.arr_room,(item:room,index)=>{
             ListItem(){
@@ -1288,13 +1303,18 @@ export struct my_DeepSeek{
                   Row(){
                     Text(item)
                       .fontColor(Color.White)
-                      .backgroundColor(Color.Blue)
+                      .backgroundColor("#ff5e5eff")
                       .borderRadius(10)
                       .padding(10)
                     Column()
                       .width(10)
-                    Column()//我的头像
-                      .width(50).borderRadius(25).height(50).backgroundColor(Color.Blue)
+                    Column(){
+                      Image($r('app.media.user'))
+                        .width("100%").height("100%")
+                        .fillColor("#ff899ce0").size({width:"90%",height:"90%"})
+
+                    }//我的头像
+                      .width(50).borderRadius(25).height(50)
                   }.justifyContent(FlexAlign.End)
                   .width("100%").padding(10)
                 }
@@ -1303,12 +1323,13 @@ export struct my_DeepSeek{
                 //Ai的回答
                 Row(){
                   Column()//ai的头像
-                    .width(50).borderRadius(25).height(50).backgroundColor("#ffcfcfcf")
+                    .width(50).borderRadius(25).height(50) .backgroundImage($r('app.media.deepseek_icon')).backgroundImageSize(ImageSize.Cover)
+
                   Column()
                     .width(10)
                   Text(item)
                     .fontColor(Color.Black)
-                    .backgroundColor("#ffcfcfcf")
+                    .backgroundColor("#ffe3e3fc")
                     .width("75%")
                     .borderRadius(10)
                     .padding(10)
@@ -1322,17 +1343,18 @@ export struct my_DeepSeek{
         }.width("100%").height(this._height)
         Row(){
           if(this.is_show){
-            TextInput({placeholder:"请输入问题",text:this.question}).width("80%").height("10%")
+            TextInput({placeholder:"请输入问题",text:this.question}).width("80%").height("10%").backgroundColor("#9c8c8c8c")
               .onChange((value)=>{this.question = value})
 
           }
           if(this.is_ark){
             Progress({ value: 0, total: 100, type: ProgressType.Ring })
-              .width(50).color(Color.White).backgroundColor('#ffbebebe')
+              .width(50).color(Color.White)  .backgroundColor("#ffe3e3fc")
               .style({ strokeWidth: 10, status: ProgressStatus.LOADING })
           }
           else{
             Button("提问")
+              .backgroundColor("#ffc2c3f6")
               .onClick(async ()=>{
                 if(this.question != ''){
                   animateTo({duration:200},()=>{
@@ -1360,9 +1382,8 @@ export struct my_DeepSeek{
               })
           }
 
-        }.justifyContent(FlexAlign.End).backgroundColor(Color.White).width("100%")
-      }.justifyContent(FlexAlign.End).borderRadius({topLeft:10,topRight:10}).backgroundColor(Color.White)
-
+        }.justifyContent(FlexAlign.End).width("100%")
+      }.justifyContent(FlexAlign.End).borderRadius({topLeft:20,topRight:20}).backgroundImage($r('app.media.ai_bg1')).backgroundImageSize(ImageSize.Cover)
       //.animation({duration:200})
     }.width("100%").height(this._height_AI)
 
