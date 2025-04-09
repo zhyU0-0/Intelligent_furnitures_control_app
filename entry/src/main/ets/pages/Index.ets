@@ -240,7 +240,7 @@ struct homepage{
   }
   //{"temperature":16,"humidity":0,"smoke":0,"motion_state":1,"door_state":0,"brightness":500,"1001":1,"1102":1,"2001":0,"3001_2":0,"4001":0,"3001_1":0,"3001_3":0}
   async new_analyze_data(data:string){
-    data = "{\"temperature\":16,\"humidity\":0,\"smoke\":0,\"motion_state\":1,\"door_state\":0,\"brightness\":3000,\"1001\":1,\"1102\":1,\"2001\":1,\"3001_2\":22,\"4001\":1,\"3001\":1,\"3001_3\":\"zl\"}"
+    data = "{\"temperature\":49,\"humidity\":85,\"smoke\":0,\"motion_state\":1,\"door_state\":0,\"brightness\":3000,\"1001\":1,\"1102\":1,\"2001\":1,\"3001_2\":22,\"4001\":1,\"3001\":1,\"3001_3\":\"zl\"}"
     let arr:string[] = data.split("/")
     for(let item of arr){
       console.log("IoTad data:"+item)
@@ -475,54 +475,159 @@ struct detail_data{
     }.height(this._h).width(this._w)
   }
 }
+
 @Component
-struct delete_room{
-  @Link arr_room:room[]
-  @Link _h:string
+struct delete_room {
+  @Link arr_room: room[]
+  @Link _h: string
+  @State is_confirm:boolean = false
+  @State confirm_index:string = ''
+
   build() {
-    Column() {
-      Button("返回").onClick(()=>{
-        animateTo({duration:500},()=>this._h = "0%")
-      } )
-        .backgroundColor(Color.White)
-        .borderWidth(2)
-        .borderColor('#6d9cee')
-        .fontColor('#6d9cee')
-      List(){
-        ForEach(this.arr_room,(item:room,value)=>{
-          ListItem() {
-            Row(){
-              Row().width("10%")
-              Text(item.name).width("40%")
-              Row().width('20%')
-              Button("删除")
-                .backgroundColor(Color.White)
-                .borderWidth(2)
-                .borderColor('#6d9cee')
-                .fontColor('#6d9cee')
-                .onClick(async ()=>{
-                  //删除房间数据
-                  this.getUIContext().showActionSheet({
-                    title: `是否删除"${item.name}"`,
-                    message: "请确认",
-                    sheets: [
-                      {title:"确认",action:async ()=>{
-                        await Room_db.deleteRoomByName(item.name)
-                        this.arr_room = this.arr_room.filter((element)=>element.name!== this.arr_room[value].name)
-                      }},
-                      {title:"取消",action:()=>{}}
-                    ]
-                  })
-                  //this.arr_f = this.arr_f.filter((element) => element.name!== this.arr_f[this.index_f].name);
-                })
+    Stack(){
+      Column() {
+
+        Button("返回").onClick(()=>{
+          animateTo({duration:500},()=>this._h = "0%")
+        } )
+          .backgroundColor(Color.White)
+          .borderWidth(2)
+          .borderColor('#6d9cee')
+          .fontColor('#6d9cee')
+
+        List({ space: 12 }) {
+          ForEach(this.arr_room, (item: room,index) => {
+            ListItem() {
+              Row() {
+                Text(item.name)
+                  .fontSize(18)
+                  .fontColor('#333')
+                  .fontWeight(FontWeight.Medium)
+                  .layoutWeight(1)
+                  .margin({ left: 16 })
+
+                Button("删除")
+                  .onClick(() => this.showDeleteDialog(item.name))
+                  .width(80)
+                  .height(36)
+                  .margin({ right: 16 })
+                  .backgroundColor('#ffeeee')
+                  .fontColor('#ff4444')
+                  .borderRadius(6)
+                  .borderWidth(1)
+                  .borderColor('#ff8888')
+                  .stateEffect(true)
+              }
+              .width('100%')
+              .height(60)
+              .backgroundColor(Color.White)
+              .borderRadius(12)
+              // .shadow({ radius: 6, color: '#20000000', offsetX: 2, offsetY: 2 })
             }
-          }
-          ListItem().height(5)
-        })
+            .padding({ top: 8, bottom: 8 })
+          })
+        }
+        .margin({ top: 20 })
+        .width('90%')
+        .flexGrow(1)
       }
-    }.height(this._h).width("100%")
+      .height("100%")
+      .width("100%")
+      .backgroundColor('#f5f5f5')
+      if(this.is_confirm){
+        ConfirmDialog({arr_room:this.arr_room,is_show:this.is_confirm,name:this.confirm_index})
+      }
+    }.height(this._h)
+    .width("100%")
+
+  }
+
+  private showDeleteDialog(item: string) {
+    this.confirm_index = item
+    animateTo({duration:300},()=>{
+      this.is_confirm = true
+    })
+
   }
 }
+@Component
+struct ConfirmDialog{
+  @Link is_show:boolean
+  @Link arr_room:room[]
+  @Link name:string
+  build() {
+    Stack(){
+      Column()
+        .width("100%")
+        .height("100%")
+        .backgroundColor("#11757575")
+        .onClick(()=>{
+          animateTo({duration:300},()=>{
+            this.is_show = false
+          })
+        })
+      Column() {
+        Image($r('app.media.ic_warning'))
+          .fillColor('#ff4444')
+          .width(48)
+          .height(48)
+          .margin({ top: 24, bottom: 16 })
+
+        Text(`删除「${this.name}」？`)
+          .fontSize(20)
+          .fontColor('#ff4444')
+          .fontWeight(FontWeight.Bold)
+          .margin({ bottom: 8 })
+
+        Text("删除后数据不可恢复，请谨慎操作！")
+          .fontSize(14)
+          .fontColor('#666')
+          .margin({ bottom: 24 })
+
+        Row() {
+          Button('取消')
+            .onClick(() => {
+              animateTo({duration:300},()=>{
+                this.is_show = false
+              })
+            })
+            .width(120)
+            .height(40)
+            .backgroundColor('#ecf0f1')
+            .fontColor('#34495e')
+            .borderRadius(20)
+            .stateEffect(true)
+
+          Button('确认删除')
+            .onClick(async () => {
+              await Room_db.deleteRoomByName(this.name)
+              this.arr_room = this.arr_room.filter(element => element.name !== this.name)
+              animateTo({duration:300},()=>{
+                this.is_show = false
+              })
+            })
+            .width(120)
+            .height(40)
+            .margin({ left: 20 })
+            .backgroundColor(
+              '#ff4444'
+            )
+            .fontColor(Color.White)
+            .borderRadius(20)
+            .stateEffect(true)
+        }
+        .margin({ bottom: 24 })
+      }.height("40%")
+      .width('80%')
+      .backgroundColor(Color.White)
+      .borderRadius(16)
+    }
+    .width("100%")
+    .height("100%")
+
+  }
+}
+
 @Component
 struct userpage{
   localstorage: LocalStoraga = new LocalStoraga("userData");
@@ -791,25 +896,33 @@ export struct WarnPage {
   }
   build() {
     Stack() {
-      Image($r('app.media.bottom_bg1'))
+      Image($r('app.media.warning_bg2'))
         .objectFit(ImageFit.Cover)
       if (this.warn_data.type == 'temp') {
         Column() {
+          Image($r('app.media.ic_warning'))
+            .fillColor(Color.Red)
+            .width(100)
+            .height(100)
+
+
           Text(this.warn_data.data.toString())
             .fontColor(Color.Red)
             .fontSize(100);
           Text("***温度警告***")
             .fontSize(18);
-          Text("解决方案：目前温度已超过安全标准，请立即行动起来！！")
+          Text("目前温度已超过安全标准，请立即行动起来！！")
+            .margin(10)
             .fontSize(16);
           Button(this.have_air_condition ? "开空调" : "开窗")
-            .backgroundColor(Color.White)
+            .backgroundColor('#ffdceffa')
             .width("50%")
             .height(50)
             .borderRadius(5)
             .borderWidth(2)
-            .borderColor(Color.Black)
-            .fontColor(Color.Red)
+            .borderColor('#4A90E2')
+            .fontColor('#4A90E2')
+            .margin(10)
             .padding({ left: 15, right: 15 })
             .onClick(async () => {
               if (this.have_air_condition) {
@@ -819,21 +932,25 @@ export struct WarnPage {
               this.is_warn = false;
             });
           Row().height(5)
-          Button("什么都不做")
+          Button("稍后处理")
             .onClick(()=>{this.is_warn = false;})
-            .backgroundColor(Color.White)
+            .backgroundColor('#ffeeee')
             .width("50%")
             .height(50)
             .borderRadius(5)
             .borderWidth(2)
-            .borderColor("#ff3e3e3e")
-            .fontColor("#ff3e3e3e")
-
+            .borderColor(Color.Red)
+            .fontColor(Color.Red)
         }
       }
       if (this.warn_data.type == 'humi') {
         Column() {
           Row(){
+            Image($r('app.media.ic_warning'))
+              .fillColor(Color.Red)
+              .width(100)
+              .height(100)
+
             Text(this.warn_data.data.toString())
               .fontColor(Color.Red)
               .fontSize(100);
@@ -843,17 +960,18 @@ export struct WarnPage {
             .fontSize(18);
           Text("解决方案：")
             .fontSize(16);
-          Text("  目前湿度已超过安全标准，请立即行动起来！！")
+          Text(" 目前湿度已超过安全标准，请立即行动起来！！")
+
             .fontSize(16);
           Button(this.have_air_condition ? "开空调，并开始除湿" : "开窗")
-            .backgroundColor(Color.White)
-            .backgroundColor(Color.White)
+
+            .backgroundColor('#ffdceffa')
             .width("50%")
             .height(50)
             .borderRadius(5)
             .borderWidth(2)
-            .borderColor(Color.Black)
-            .fontColor(Color.Red)
+            .borderColor('#4A90E2')
+            .fontColor('#4A90E2')
             .padding({ left: 15, right: 15 })
             .onClick(async () => {
               if (this.have_air_condition) {
@@ -863,19 +981,24 @@ export struct WarnPage {
               this.is_warn = false;
             });
           Row().height(5)
-          Button("什么都不做")
+          Button("稍后处理")
             .onClick(()=>{this.is_warn = false;})
-            .backgroundColor(Color.White)
+            .backgroundColor('#ffeeee')
             .width("50%")
             .height(50)
             .borderRadius(5)
             .borderWidth(2)
-            .borderColor(Color.Black)
-            .fontColor(Color.Black)
+            .borderColor(Color.Red)
+            .fontColor(Color.Red)
         }
       }
       if (this.warn_data.type == 'smoke') {
         Column() {
+          Image($r('app.media.ic_warning'))
+            .fillColor(Color.Red)
+            .width(100)
+            .height(100)
+
           Text(this.warn_data.data.toString())
             .fontColor(Color.Red)
             .fontSize(100);
@@ -884,13 +1007,13 @@ export struct WarnPage {
           Text("解决方案：目前温度已超过安全标准，请立即行动起来！！")
             .fontSize(16);
           Button(this.have_fan ? "打开排风扇" : "开窗")
-            .backgroundColor(Color.White)
+            .backgroundColor('#ffdceffa')
             .width("50%")
             .height(50)
             .borderRadius(5)
             .borderWidth(2)
-            .borderColor(Color.Black)
-            .fontColor(Color.Red)
+            .borderColor('#4A90E2')
+            .fontColor('#4A90E2')
             .padding({ left: 15, right: 15 })
             .onClick(async () => {
               if (this.have_air_condition) {
@@ -900,15 +1023,15 @@ export struct WarnPage {
               this.is_warn = false;
             });
           Row().height(5)
-          Button("什么都不做")
+          Button("稍后处理")
             .onClick(()=>{this.is_warn = false;})
-            .backgroundColor(Color.White)
+            .backgroundColor('#ffeeee')
             .width("50%")
             .height(50)
             .borderRadius(5)
             .borderWidth(2)
-            .borderColor("#ff3e3e3e")
-            .fontColor("#ff3e3e3e")
+            .borderColor(Color.Red)
+            .fontColor(Color.Red)
         }
       }
     }

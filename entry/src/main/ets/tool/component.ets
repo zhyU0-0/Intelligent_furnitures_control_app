@@ -691,13 +691,18 @@ export struct displayRoom {
                 })
 
                 ListItem() {
-                  Text("门锁")
-                    .fontColor('rgb(70, 100, 180)')
-                    .position({ y: 40, x: 35 });
+                  Column(){
+                    Text("门锁")
+                      .fontColor('rgb(70, 100, 180)')
+                      .position({ y: 30, x: 35  });
+                    Image($r('app.media._door'))
+                      .size({height:90,width:90})
+                      .position({x:30,y:70})
+                  }.width("100%").height("100%")
+
                 }
                 .width(150).height(200).borderWidth(2).borderColor(Color.White).padding(10).margin({ top: 0, bottom: 40, left: 20, right: 20 })
-                .backgroundImage($r('app.media.robot3'))
-                .backgroundImageSize(ImageSize.Cover)
+                .backgroundColor(Color.White)
                 .shadow({ radius: 5, offsetX: 10, offsetY: 10, color: "#939391" })
                 .borderRadius(10)
                 .onClick(() => {
@@ -918,29 +923,28 @@ struct mySliber{
 
 
 @Component
-struct control_curtain{
-  @Link is_show:boolean
-  @Link arr_room:room[]
-  @State curtain_List:Furniture[] = []
+struct control_curtain {
+  @Link is_show: boolean
+  @Link arr_room: room[]
+  @State curtain_List: Furniture[] = []
 
   aboutToAppear(): void {
-    for (let r of this.arr_room){
+    for (let r of this.arr_room) {
       let _exist = false
-      let fan_ = new Furniture('',0,0)
-      for (let f of r.furniture_s){
-        if(f.type_id>3999&&f.type_id<5000){
+      let fan_ = new Furniture('', 0, 0)
+      for (let f of r.furniture_s) {
+        if (f.type_id > 3999 && f.type_id < 5000) {
           _exist = true
           fan_ = f
         }
       }
       this.curtain_List.push(fan_)
-
     }
   }
 
   build() {
-    Column(){
-      Button("返回").onClick(()=>{this.is_show = false})
+    Column() {
+      Button("返回")
         .onClick(() => this.is_show = false)
         .padding(10)
         .backgroundColor(Color.White)
@@ -948,24 +952,58 @@ struct control_curtain{
         .borderColor('#6d9cee')
         .fontColor('#6d9cee')
         .margin(10);
-      if(this.arr_room.length != 0){
-        List(){
-          ForEach(this.arr_room,(item:room,index)=>{
-            ListItem(){
-              Row(){
-                Text(item?.name)
-                Toggle({ type: ToggleType.Switch, isOn:this.curtain_List[index]?.switch?true:false})
-                  .onClick(async ()=>{
-                    if(this.curtain_List[index].switch){
-                      this.curtain_List[index] = new Furniture(this.curtain_List[index].name,0,this.curtain_List[index].type_id)
-                      _IoTad.set_curtain_by_id("off")
-                    }else{
-                      this.curtain_List[index] = new Furniture(this.curtain_List[index].name,1,this.curtain_List[index].type_id)
-                      _IoTad.set_curtain_by_id("on")
-                    }
 
+      if (this.arr_room.length != 0) {
+        List() {
+          ForEach(this.arr_room, (item: room, index) => {
+            ListItem() {
+              Stack() {
+                // 背景图片（根据开关状态切换）
+                Image(this.curtain_List[index]?.switch === 1 ? $r('app.media.cur_open') : $r('app.media.cur_close'))
+                  .width('70%')
+                  .height('70%')
+                  .objectFit(ImageFit.Cover)
+                  .fillColor("#ff8f8f92")
+
+                // 内容行
+                Column() {
+                  Text(item?.name)
+                    .fontSize(16)
+                    .fontColor('#333')
+                  Toggle({
+                    type: ToggleType.Switch,
+                    isOn: this.curtain_List[index]?.switch === 1
                   })
-              }.width(320).padding(20).borderRadius(15).margin(20).justifyContent(FlexAlign.SpaceAround)
+                    .onClick(async () => {
+                      // 创建新数组触发状态更新
+                      let newList = [...this.curtain_List];
+                      if (newList[index].switch === 1) {
+                        newList[index] = new Furniture(
+                          newList[index].name,
+                          0,
+                          newList[index].type_id
+                        );
+                        _IoTad.set_curtain_by_id("off");
+                      } else {
+                        newList[index] = new Furniture(
+                          newList[index].name,
+                          1,
+                          newList[index].type_id
+                        );
+                        _IoTad.set_curtain_by_id("on");
+                      }
+                      this.curtain_List = newList;
+                    })
+                }
+                .width('100%')
+                .height('100%')
+                .padding(20)
+                .justifyContent(FlexAlign.SpaceBetween)
+              }
+              .width(150)
+              .height(200)
+              .margin(20)
+              .borderRadius(15)
               .backgroundColor(
                 index % 3 === 0? '#ffffe1f9' :
                   index % 3 === 1? '#ffece6fa' :
@@ -976,18 +1014,17 @@ struct control_curtain{
                 offsetX: 20,
                 offsetY: 20,
                 color: "#a8474545"
-              });
+              })
             }
           })
-        }.lanes(1)
-      }else{
+        }.lanes(2)
+      } else {
         Text("还没有房间哦")
       }
-
-
-    }.backgroundColor( '#e0efff')
-    .width("100%").height("100%");
-
+    }
+    .backgroundColor('#e0efff')
+    .width("100%")
+    .height("100%");
   }
 }
 
@@ -996,6 +1033,7 @@ struct control_fan{
   @Link is_show:boolean
   @Link arr_room:room[]
   @State fan_List:Furniture[] = []
+  @State fan_ex_list:boolean[] = []
 
   aboutToAppear(): void {
     for (let r of this.arr_room){
@@ -1008,6 +1046,11 @@ struct control_fan{
         }
       }
       this.fan_List.push(fan_)
+      if(_exist){
+        this.fan_ex_list.push(true)
+      }else{
+        this.fan_ex_list.push(false)
+      }
 
     }
   }
@@ -1025,33 +1068,36 @@ struct control_fan{
       if(this.arr_room.length != 0){
         List(){
           ForEach(this.arr_room,(item:room,index)=>{
-            ListItem(){
-              Row(){
-                Text(item.name)
-                Toggle({ type: ToggleType.Switch, isOn:this.fan_List[index].switch?true:false})
-                  .onClick(async ()=>{
-                    if(this.fan_List[index].switch){
-                      this.fan_List[index] = new Furniture(this.fan_List[index].name,0,this.fan_List[index].type_id)
-                      _IoTad.set_fan_by_id("off")
-                    }else{
-                      this.fan_List[index] = new Furniture(this.fan_List[index].name,1,this.fan_List[index].type_id)
-                      _IoTad.set_fan_by_id("on")
-                    }
+            if(this.fan_ex_list[index]){
+              ListItem(){
+                Row(){
+                  Text(item.name)
+                  Toggle({ type: ToggleType.Switch, isOn:this.fan_List[index].switch?true:false})
+                    .onClick(async ()=>{
+                      if(this.fan_List[index].switch){
+                        this.fan_List[index] = new Furniture(this.fan_List[index].name,0,this.fan_List[index].type_id)
+                        _IoTad.set_fan_by_id("off")
+                      }else{
+                        this.fan_List[index] = new Furniture(this.fan_List[index].name,1,this.fan_List[index].type_id)
+                        _IoTad.set_fan_by_id("on")
+                      }
 
-                  })
-              }.width(320).padding(20).borderRadius(15).margin(20).justifyContent(FlexAlign.SpaceAround)
-              .backgroundColor(
-                index % 3 === 0? '#ffffe1f9' :
-                  index % 3 === 1? '#ffece6fa' :
-                    '#ffe0ebff'
-              )
-              .shadow({
-                radius: 5,
-                offsetX: 20,
-                offsetY: 20,
-                color: "#a8474545"
-              });
+                    })
+                }.width(320).padding(20).borderRadius(15).margin(20).justifyContent(FlexAlign.SpaceAround)
+                .backgroundColor(
+                  index % 3 === 0? '#ffffe1f9' :
+                    index % 3 === 1? '#ffece6fa' :
+                      '#ffe0ebff'
+                )
+                .shadow({
+                  radius: 5,
+                  offsetX: 20,
+                  offsetY: 20,
+                  color: "#a8474545"
+                });
+              }
             }
+
           })
         }.lanes(1)
       }else{
@@ -1249,7 +1295,6 @@ export struct my_DeepSeek{
                 Row(){
                   Column()//ai的头像
                     .width(50).borderRadius(25).height(50) .backgroundImage($r('app.media.deepseek_icon')).backgroundImageSize(ImageSize.Cover)
-
                   Column()
                     .width(10)
                   Text(item)

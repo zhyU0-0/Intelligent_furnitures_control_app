@@ -262,7 +262,7 @@ export class IoTda{
 
   async set_LED_brightness_by_id(brightness:number,LED_id?:number){
 
-    this.get_data()
+
     const httpRequest = http.createHttp();
     const url = `https://${IOTDA_ENDPOINT}/v5/iot/${PROJECT_ID}/devices/${this.DEVICE_ID}/commands`;
     const body :_body1_push_brightness = {
@@ -287,8 +287,9 @@ export class IoTda{
 
       console.log("Message sent::"+response.result)
       if (response.responseCode === 200) {
-        console.log('Message sent successfully:', response.result.toString());
 
+        console.log('Message sent successfully:', response.result.toString());
+        await this.get_data()
         return 1
       } else {
         return -1

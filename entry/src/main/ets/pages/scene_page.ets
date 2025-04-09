@@ -240,6 +240,7 @@ struct leaving_scene {
   @Link is_show: boolean;
   @Link _height: string;
   @State isAirConditionShow: boolean = false;
+  @State petFoodRemaining: number = 65; // 添加剩余量状态
 
   build(): void {
     Stack(){
@@ -310,7 +311,7 @@ struct leaving_scene {
             params: {
               icon: $r("app.media.ic_feeder"),
               title: "宠物喂食器",
-              status: "剩余量：65%",
+              status: `剩余量：${this.petFoodRemaining}%`, // 绑定动态值
               buttonText: "立即投喂",
               onAction: () => this.feedPet()
             }
@@ -341,9 +342,8 @@ struct leaving_scene {
   }
 
   private feedPet(): void {
-    // 宠物喂食逻辑
+    this.petFoodRemaining = Math.max(this.petFoodRemaining - 5, 0);
   }
-
   private closePanel(): void {
     this.is_show = false;
     this._height = "0%";
