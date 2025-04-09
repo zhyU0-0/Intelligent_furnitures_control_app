@@ -167,6 +167,13 @@ struct scenes {
           .fontColor(this.isEnabled ? '#27AE60' : '#E74C3C')
           .onClick(()=>{
             this.isEnabled = !this.isEnabled
+            if(this.isEnabled){
+              _IoTad.set_LED_brightness_by_id(1,1001)
+              _IoTad.set_curtain_by_id("off")
+            }else{
+              _IoTad.set_LED_brightness_by_id(5000,1001)
+              _IoTad.set_curtain_by_id("on")
+            }
           })
       }
       .padding(16)

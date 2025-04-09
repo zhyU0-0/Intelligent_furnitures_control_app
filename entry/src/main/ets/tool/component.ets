@@ -800,7 +800,6 @@ export struct displayRoom {
   }
 }
 
-
 @Component
 struct control_lights{
 
@@ -918,9 +917,6 @@ struct mySliber{
   }
 
 }
-
-
-
 
 @Component
 struct control_curtain {
@@ -1411,7 +1407,7 @@ export struct my_airCon_edit{
               .onClick(() => {
                 this.selectedMode = mode;
                 this.acColor = this.calculateAcColor();
-                _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode)
+                _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode == "auto"?"zd":this.selectedMode == "heat"?"zr":this.selectedMode == "cool"?"zl":this.selectedMode == "dry"?"cs":"zd")
               })
               .padding(10)
               .backgroundColor(this.selectedMode === mode ? this.Color_B[value] : '#e0e0e0')
@@ -1432,9 +1428,9 @@ export struct my_airCon_edit{
             Button('-')
               .onClick(() => {
                 if (this.tempSetting > 16) {
-                  this.tempSetting -= 0.5;
+                  this.tempSetting -= 1;
                   this.is_chang = !this.is_chang;
-                  _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode)
+                  _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.item.mode)
                 }
               })
               .padding(10)
@@ -1446,9 +1442,9 @@ export struct my_airCon_edit{
             Button('+')
               .onClick(() => {
                 if (this.tempSetting < 30) {
-                  this.tempSetting += 0.5;
+                  this.tempSetting += 1;
                   this.is_chang = !this.is_chang;
-                  _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode)
+                  _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.item.mode)
                 }
               })
               .padding(10)
@@ -1521,7 +1517,6 @@ export struct control_aircon {
       for(let f of r.furniture_s){
         if(f.type_id>=3000&&f.type_id<4000){
           this.tempSetting = f.temp
-          this.tempSetting = f.temp
           if(f.mode == "zd"){
             this.selectedMode = "auto"
           }else if(f.mode == 'zr'){
@@ -1570,7 +1565,7 @@ export struct control_aircon {
                 .onClick(() => {
                   this.selectedMode = mode;
                   this.acColor = this.calculateAcColor();
-                  _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode)
+                  _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode == "auto"?"zd":this.selectedMode == "heat"?"zr":this.selectedMode == "cool"?"zl":this.selectedMode == "dry"?"cs":"zd")
                 })
                 .padding(10)
                 .backgroundColor(this.selectedMode === mode ? this.Color_B[value] : '#e0e0e0')
@@ -1591,9 +1586,9 @@ export struct control_aircon {
               Button('-')
                 .onClick(async () => {
                   if (this.tempSetting > 16) {
-                    this.tempSetting -= 0.5;
+                    this.tempSetting -= 1;
                     this.is_chang = !this.is_chang;
-                    await _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode)
+                    await _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode == "auto"?"zd":this.selectedMode == "heat"?"zr":this.selectedMode == "cool"?"zl":this.selectedMode == "dry"?"cs":"zd")
                   }
                 })
                 .padding(10)
@@ -1605,9 +1600,9 @@ export struct control_aircon {
               Button('+')
                 .onClick(async () => {
                   if (this.tempSetting < 30) {
-                    this.tempSetting += 0.5;
+                    this.tempSetting += 1;
                     this.is_chang = !this.is_chang;
-                    await _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode)
+                    await _IoTad.set_air_condition_by_id(this.tempSetting,"on",this.selectedMode == "auto"?"zd":this.selectedMode == "heat"?"zr":this.selectedMode == "cool"?"zl":this.selectedMode == "dry"?"cs":"zd")
                   }
                 })
                 .padding(10)
@@ -1648,7 +1643,7 @@ export struct control_aircon {
                         let _is_exist_open:boolean = false
                         if(this.is_open_list[value]){
                           this.is_open_list[value] = false
-                          await _IoTad.set_air_condition_by_id(25,"off",this.selectedMode)
+                          await _IoTad.set_air_condition_by_id(25,"off",this.selectedMode == "auto"?"zd":this.selectedMode == "heat"?"zr":this.selectedMode == "cool"?"zl":this.selectedMode == "dry"?"cs":"zd")
                           for(let i of this.is_open_list){
                             if(i){
                               _is_exist_open =true
@@ -1661,7 +1656,7 @@ export struct control_aircon {
                           }
                         }else{
                           this.is_open_list[value] = true
-                          await _IoTad.set_air_condition_by_id(25,"on",this.selectedMode)
+                          await _IoTad.set_air_condition_by_id(25,"on",this.selectedMode == "auto"?"zd":this.selectedMode == "heat"?"zr":this.selectedMode == "cool"?"zl":this.selectedMode == "dry"?"cs":"zd")
                           for(let i of this.is_open_list){
                             if(i){
                               _is_exist_open =true

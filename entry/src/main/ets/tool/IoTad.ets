@@ -214,6 +214,7 @@ export class IoTda{
     };
 
     console.log("body:::"+JSON.stringify(body))
+    DATA_new = "{\"temperature\":16,\"humidity\":0,\"smoke\":0,\"motion_state\":1,\"door_state\":0,\"brightness\":0,\"1001\":1,\"1102\":1,\"2001\":0,\"3001_2\":20,\"4001\":0,\"3001\":1,\"3001_3\":\"zl\"}"
     try {
       const response = await httpRequest.request(url, {
         method: http.RequestMethod.POST,
@@ -228,7 +229,7 @@ export class IoTda{
       if (response.responseCode === 200) {
         console.log('Message sent successfully:', response.result.toString());
         let regex = /"response":(.*?)}}}/
-        let regex1 = /"data":(.*?)}}/
+        let regex1 = /"data":(.*?)}/
         //{"result_code":0,"data":{"temperature":16,"humidity":0,"smoke":0,"motion_state":1,"door_state":0,"brightness":500,"1001":1,"1102":1,"2001":0,"3001_2":0,"4001":0,"3001_1":0,"3001_3":0}}
         try {
           let _time = systemDateTime.getTime(true)
@@ -238,12 +239,11 @@ export class IoTda{
           let error = e as BusinessError;
           console.info(`Failed to get time. message: ${error.message}, code: ${error.code}`);
         }
-        console.log("Data::"+response.result)
-        //{"result_code":0,"data":{"temperature":16,"humidity":0,"smoke":0,"motion_state":1,"door_state":0,"brightness":500,"1001":1,"1102":1,"2001":0,"3001_2":0,"4001":0,"3001_1":0,"3001_3":0}}
-        DATA_new = response.result.toString().match(regex)?.toString().split(",")[1]+"}"
-        //{"temperature":16,"humidity":0,"smoke":0,"motion_state":1,"door_state":0,"brightness":500,"1001":1,"1102":1,"2001":0,"3001_2":0,"4001":0,"3001_1":0,"3001_3":0}
-        DATA_new = DATA_new.match(regex1)?.toString().split(",")[1]+"}"
-
+        console.log("Data::"+response.result.toString())
+        DATA_new = response.result.toString().match(regex1)?.toString()+"}"
+        console.log("data:::1"+response.result.toString().match(regex1)?.toString()+"}")
+        DATA_new ="{" + DATA_new.match(regex1)?.toString().split("},{")[1]+"}"
+        console.log("data:::2"+DATA_new)
         return "//{\"result_code\":0,\"data\":{\"temperature\":16,\"humidity\":0,\"smoke\":0,\"motion_state\":1,\"door_state\":0,\"brightness\":500,\"1001\":1,\"1102\":1,\"2001\":0,\"3001_2\":0,\"4001\":0,\"3001_1\":0,\"3001_3\":0}}"
         return response.result.toString().match(regex)?.toString().split(",")[1]+"}"
 

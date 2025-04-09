@@ -116,14 +116,13 @@ struct homepage{
         }
 
       console.log("open_arr_room:"+JSON.stringify(this.arr_room))
-
-      this.new_analyze_data("")
-      /*setTimeout(async ()=>{
+      setTimeout(async ()=>{
 
         await tcp.getData()
         console.log("Tcp_get_data : "+Data_Tcp)
         this.analyze_data(Data_Tcp)
         await _IoTad.get_data()
+        await this.new_analyze_data(DATA_new)
         Data_Id_me = Data_id_yun
 
       },1000)
@@ -133,7 +132,7 @@ struct homepage{
           DATA_IoTda = DATA_new
           await this.new_analyze_data(DATA_IoTda)
         }
-      },1000)*/
+      },1000)
     },100)
   }
   async judge(temp?:number,humi?:number,smoke?:number){
@@ -240,11 +239,11 @@ struct homepage{
   }
   //{"temperature":16,"humidity":0,"smoke":0,"motion_state":1,"door_state":0,"brightness":500,"1001":1,"1102":1,"2001":0,"3001_2":0,"4001":0,"3001_1":0,"3001_3":0}
   async new_analyze_data(data:string){
-    data = "{\"temperature\":49,\"humidity\":85,\"smoke\":0,\"motion_state\":1,\"door_state\":0,\"brightness\":3000,\"1001\":1,\"1102\":1,\"2001\":1,\"3001_2\":22,\"4001\":1,\"3001\":1,\"3001_3\":\"zl\"}"
-    let arr:string[] = data.split("/")
-    for(let item of arr){
-      console.log("IoTad data:"+item)
-      let values:string = JSON.parse(item)
+    //data = "{\"temperature\":49,\"humidity\":85,\"smoke\":0,\"motion_state\":1,\"door_state\":0,\"brightness\":3000,\"1001\":1,\"1102\":1,\"2001\":1,\"3001_2\":22,\"4001\":1,\"3001\":1,\"3001_3\":\"zl\"}"
+
+
+      console.log("IoTad data:"+data)
+      let values:string = JSON.parse(data)
       if(typeof values?.["temperature"] != "undefined") {
         this.temp = values?.["temperature"]
         this.humi = values?.["humidity"]
@@ -286,7 +285,7 @@ struct homepage{
         this.arr_room = new_arr_room
       }
 
-    }
+
   }
 
 

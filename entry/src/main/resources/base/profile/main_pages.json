@@ -9,5 +9,5 @@
     "pages/scan_devices",
     "pages/Search_devices",
     "pages/test_Page"
-  ]
+  ,"pages/analyze"]
 }
