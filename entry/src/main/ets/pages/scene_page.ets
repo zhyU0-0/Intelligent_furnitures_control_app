@@ -165,11 +165,19 @@ struct scenes {
 
         Text(this.isEnabled ? "已启用" : "已关闭")
           .fontColor(this.isEnabled ? '#27AE60' : '#E74C3C')
+
+        Toggle({ type: ToggleType.Switch, isOn:this.isEnabled})
           .onClick(()=>{
             this.isEnabled = !this.isEnabled
             if(this.isEnabled){
               _IoTad.set_LED_brightness_by_id(1,1001)
               _IoTad.set_curtain_by_id("off")
+              let new_list:Furniture[] = []
+              for (let i of this.furnitureList){
+                i.switch = 0
+                new_list.push(i)
+              }
+              this.furnitureList = new_list
             }else{
               _IoTad.set_LED_brightness_by_id(5000,1001)
               _IoTad.set_curtain_by_id("on")

@@ -3,10 +3,10 @@ import util from '@ohos.util';
 import router from '@ohos.router';
 import { air_condition, Furniture, room } from '../tool/classes';
 import { displayRoom, my_DeepSeek} from '../tool/component';
-import { LocalStoraga } from '../entryability/LocalStorage';
+import { LocalStoraga } from '../data/LocalStorage';
 import { _Udp } from '../tool/UDP';
 import { Data_Tcp, _Tcp } from '../tool/TCP';
-import { RoomDatabase } from '../entryability/RdbStorage';
+import { RoomDatabase } from '../data/RdbStorage';
 import socket from '@ohos.net.socket';
 import wifi from '@ohos.wifi';
 import {  notificationManager } from '@kit.NotificationKit';
@@ -52,10 +52,10 @@ struct homepage{
   })
   @State serOption_humi:Options = new Options({
     xAxis:{data:["0:00","3:00","6:00","9:00","12:00","15:00","18:00","21:00"]},
-    yAxis:{name:'温度'},
+    yAxis:{name:'湿度'},
     series:[{
       name:'平均湿度',
-      data:[40,41,42,40,42,50,55,46],
+      data:[88,89,86,78,79,85,88,77],
       color: "#ff039f96",
       arcLineWidth:100
     }]

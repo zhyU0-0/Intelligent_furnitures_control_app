@@ -1,4 +1,4 @@
-import { HttpRequest } from '../entryability/HttpFuntion';
+import { HttpRequest } from '../data/HttpFuntion';
 //import { http } from '@kit.NetworkKit';
 
 import http from '@ohos.net.http';

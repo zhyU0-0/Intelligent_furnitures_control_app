@@ -4,7 +4,7 @@ import Base from '@ohos.base'
 
 import wifi from '@ohos.wifi';
 import { router } from '@kit.ArkUI';
-import { LocalStoraga } from '../entryability/LocalStorage';
+import { LocalStoraga } from '../data/LocalStorage';
 
 
 //***********本页面专门用来获取权限，初始化信息*********

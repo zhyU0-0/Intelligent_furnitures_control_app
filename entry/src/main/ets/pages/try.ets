@@ -1,4 +1,4 @@
-import { HttpRequest } from '../entryability/HttpFuntion';
+import { HttpRequest } from '../data/HttpFuntion';
 import { search_device } from './Search_devices'
 import { http } from '@kit.NetworkKit';
 import { BusinessError } from '@kit.BasicServicesKit';

@@ -7,7 +7,7 @@ import { wifi } from '@kit.ConnectivityKit';
 import { router } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import preferences from '@ohos.data.preferences';
-import { LocalStoraga } from '../entryability/LocalStorage';
+import { LocalStoraga } from '../data/LocalStorage';
 
 
 let udp:socket.UDPSocket = socket.constructUDPSocketInstance()

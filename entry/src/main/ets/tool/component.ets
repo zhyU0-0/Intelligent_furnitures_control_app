@@ -1,5 +1,5 @@
-import { LocalStoraga } from "../entryability/LocalStorage";
-import { RoomDatabase } from "../entryability/RdbStorage";
+import { LocalStoraga } from "../data/LocalStorage";
+import { RoomDatabase } from "../data/RdbStorage";
 import { tcp } from "../pages/Index";
 import { API_DeepSeek } from "../pages/OpenAI_Page";
 import { _IoTad } from "../pages/scan_devices";

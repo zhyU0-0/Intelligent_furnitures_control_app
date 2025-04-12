@@ -181,7 +181,7 @@ struct CameraPage {
     Column() {
       Web({ src: `http://192.168.204.68`,controller:new webview.WebviewController })
         .width('100%')
-        .height(300)
+        .height(500)
       /*.onControllerReady((controller) => {
         controller.loadUrl(`http://${this.ip}:${this.port}/stream`);
       })*/
