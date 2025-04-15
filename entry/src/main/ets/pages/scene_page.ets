@@ -236,6 +236,7 @@ struct scenes {
   private toggleDevice(item: Furniture): Furniture {
     item.switch = item.switch ? 0 : 1;
     _IoTad.set_curtain_by_id(item.switch ? "on" : "off");
+    _IoTad.set_LED_brightness_by_id(item.switch?5000:1)
     return new Furniture(item.name,item.switch,item.type_id)
   }
 

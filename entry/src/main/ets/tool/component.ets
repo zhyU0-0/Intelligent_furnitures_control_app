@@ -438,6 +438,16 @@ export struct myList {
             .onClick(()=>{
               if(item.type_id<2000){
                 if(item.type_id>1100){
+                  /*console.log("感应灯111")
+                  setTimeout(()=>{
+                    this.arr_fnt[index] = new Furniture(item.name,1,item.type_id)
+                    this.arr_fnt[index].lighting = 5000
+                    setTimeout(()=>{
+                      this.arr_fnt[index] = new Furniture(item.name,0,item.type_id)
+                      this.arr_fnt[index].lighting = 0
+                    },2000)
+                  },2000)*/
+
                 }else{
                   if(item.switch){
                     this.arr_fnt[index] = new Furniture(item.name,0,item.type_id)

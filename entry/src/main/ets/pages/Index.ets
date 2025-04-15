@@ -163,6 +163,7 @@ struct homepage{
       title = "湿度过高"
     }
     if(smoke != null){
+      console.log("smoke:::")
       if(smoke>max_smoke) {
         let paramInfo: Datamodel = {
           type: "smoke",
@@ -203,7 +204,7 @@ struct homepage{
       if(typeof values?.["temp"] != "undefined") {
         this.temp = values?.["temp"]
         this.humi = values?.["humi"]
-        this.judge(Number(this.temp),Number(this.humi))
+        this.judge(Number(this.temp),Number(this.humi),Number())
 
 
         console.log("udp send temp"+this.temp+"::"+this.humi)
@@ -248,7 +249,7 @@ struct homepage{
         this.temp = values?.["temperature"]
         this.humi = values?.["humidity"]
         this.smoke = values?.['smoke']
-        this.judge(Number(this.temp),Number(this.humi))
+        this.judge(Number(this.temp),Number(this.humi),Number(this.smoke ))
         console.log("IoTad send temp"+this.temp+"::"+this.humi)
         let new_arr_room:room[] = []
         for (let r of this.arr_room){

@@ -223,7 +223,7 @@ export class IoTda{
         },
         extraData: JSON.stringify(body),
       });
-      DATA_new = "{\"temperature\":40,\"humidity\":80,\"smoke\":26,\"motion_state\":1,\"door_state\":0,\"brightness\":5000,\"1001\":1,\"1102\":1,\"2001\":1,\"3001_2\":20,\"4001\":1,\"3001\":1,\"3001_3\":\"zl\"}"
+      DATA_new = "{\"temperature\":20,\"humidity\":40,\"smoke\":88,\"motion_state\":1,\"door_state\":0,\"brightness\":5000,\"1001\":1,\"1102\":1,\"2001\":1,\"3001_2\":20,\"4001\":1,\"3001\":1,\"3001_3\":\"zl\"}"
       console.log("Message sent::"+response.result)
       if (response.responseCode === 200) {
         console.log('Message sent successfully:', response.result.toString());
@@ -264,7 +264,7 @@ export class IoTda{
 
   async set_LED_brightness_by_id(brightness:number,LED_id?:number){
 
-
+    //https://${IOTDA_ENDPOINT}/v5/iot/${PROJECT_ID}/devices/${this.DEVICE_ID}/commands
     const httpRequest = http.createHttp();
     const url = `https://${IOTDA_ENDPOINT}/v5/iot/${PROJECT_ID}/devices/${this.DEVICE_ID}/commands`;
     const body :_body1_push_brightness = {
