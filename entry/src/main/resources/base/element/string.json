@@ -11,6 +11,14 @@
     {
       "name": "EntryAbility_label",
       "value": "智能家居"
+    },
+    {
+      "name": "media_permission_reason_getImage",
+      "value": "需要访问您的相册以选择图片"
+    },
+    {
+      "name": "media_permission_reason_setImage",
+      "value": "EntryAbility"
     }
   ]
 }
